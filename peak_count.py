@@ -3,6 +3,7 @@ import pysam
 import argparse
 import scipy.sparse
 import numpy as np
+import anndata
 
 def get_options():
   parser = argparse.ArgumentParser(prog='peak_counter.py')
@@ -25,6 +26,9 @@ def get_options():
 def list_cells(header):
   return [x['SM'] for x in header['RG']]
   
+def get_regions(peaks_file):
+  region_tuples = [x.split()[:3] for x in open(options.peaks_file) if not x.startswith('#')]
+  return ["%s:%s-%s" % (x[0], x[1], x[2]) for x in region_tuples]
 
 def main():
   options = get_options()
@@ -43,8 +47,9 @@ def main():
   
   counter = dict([(x, 0) for x in bc_list])
 
-  if options.output_sparse:
-    N_regions = len([x for x in open(options.peaks_file) if not x.startswith('#')])
+  if options.output_sparse or options.output_anndata:
+    regions = get_regions(options.peaks_file)
+    N_regions = len(regions)
     N_cells = len(bc_list)
     count_matrix = scipy.sparse.lil_matrix((N_regions, N_cells), dtype=int)
     
@@ -76,13 +81,18 @@ def main():
   bam_in.close()
   if options.output_sparse:
     fout = "%s.npz" % prefix
-    count_matrix = scipy.sparse.csc_matrix(count_matrix) #covert
+    count_matrix = scipy.sparse.csr_matrix(count_matrix) #covert
     np.savez(fout, data = count_matrix.data, indices=count_matrix.indices, 
              indptr=count_matrix.indptr, shape=count_matrix.shape, bc_list=bc_list)
 
     # this to be load as following:
     # loader = np.load(file.npz)
-    # count_matrix = scipy.sparse.csc_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])             
+    # count_matrix = scipy.sparse.csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])             
+  if options.output_anndata:
+    fout = "%s.h5" % prefix
+    count_matrix = scipy.sparse.csr_matrix(count_matrix) #covert
+    adata = anndata.AnnData(count_matrix, var=bc_list, obs=regions)
+    
 
 if __name__ == '__main__':
   main()
