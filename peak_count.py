@@ -16,8 +16,8 @@ def get_options():
   options = parser.parse_args()
   if not options.output_bed and not options.output_sparse and not options.output_ann:
     # for the time being, default output is bed
-    options.output_type = 'bed'
-  
+    options.output_bed = True
+
   return options
 
 def list_cells(header):
@@ -27,17 +27,21 @@ def list_cells(header):
 def main():
   options = get_options()
 
-  if options.output_type == 'bed':
+  if options.output_bed:
     fout = open("%s.bed" % (options.output), 'w')
     
   # we assume all barcodes are stored as samples in the input bamfile header (by RG)
   bam_in = pysam.Samfile(options.bamfile, 'rb')
   bc_list = list_cells(bam_in.header)
   
-  counter = dict([(x, 0) for x in bc_list])
+  if options.output_bed:
+    counter = dict([(x, 0) for x in bc_list])
+  elif options.ouput_sparse:
+    1
+    
   id2sm = dict([(x['ID'], x['SM']) for x in bam_in.header['RG']])
   
-  if options.output_type == 'bed':
+  if options.output_bed:
     spool = ['chrom', 'start', 'end'] + bc_list
     fout.write("\t".join(spool) + "\n")
 
@@ -49,10 +53,11 @@ def main():
     for alignment in bam_in.fetch(chrom, int(start), int(end)):
       if alignment.is_proper_pair and alignment.mapq >= options.quality and alignment.is_read1:
         if options.output_counts:
+          # TODO: deduplicate on the fly by hashing reads
           counter[id2sm[dict(alignment.tags)['RG']]] += 1
         else:  
           counter[id2sm[dict(alignment.tags)['RG']]] = 1
-    if options.output_type == 'bed':
+    if options.output_bed:
       spool = [chrom, start, end] + ["%d" % counter[x] for x in bc_list]
       fout.write("\t".join(spool) + "\n")
       counter = dict([(x,0) for x in bc_list])
