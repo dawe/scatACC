@@ -2,6 +2,7 @@ import sys
 import pysam
 import argparse
 import scipy.sparse
+import numpy as np
 
 def get_options():
   parser = argparse.ArgumentParser(prog='peak_counter.py')
