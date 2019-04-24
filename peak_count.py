@@ -51,7 +51,7 @@ def main():
     regions = get_regions(options.peaks_file)
     N_regions = len(regions)
     N_cells = len(bc_list)
-    count_matrix = scipy.sparse.lil_matrix((N_cells, N_regions), dtype=int)
+    count_matrix = scipy.sparse.lil_matrix((N_regions, N_cells), dtype=int)
     
   id2sm = dict([(x['ID'], x['SM']) for x in bam_in.header['RG']])
   
@@ -91,9 +91,10 @@ def main():
   if options.output_anndata:
     import pandas as pd
     fout = "%s.h5ad" % prefix
-    count_matrix = scipy.sparse.csr_matrix(count_matrix) #convert
-    adata = anndata.AnnData(count_matrix, var=pd.DataFrame(bc_list, columns=['cell_barcode']),
-                            obs=pd.DataFrame(regions, columns=['region']))
+    count_matrix = scipy.sparse.csr_matrix(count_matrix.T) #convert
+    n_cells = pd.DataFrame(np.array(np.sum(count_matrix > 0, axis=0)).ravel(), index=regions, columns=['n_cells'])
+    n_regions = pd.DataFrame(np.array(np.sum(count_matrix > 0, axis=1)).ravel(), index=bc_list, columns=['n_regions'])
+    adata = anndata.AnnData(count_matrix, obs=n_regions, var=n_cells)
     adata.write_h5ad(fout)
     
 
