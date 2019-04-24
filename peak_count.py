@@ -73,7 +73,7 @@ def main():
       count_matrix[nl] = [counter[x] for x in bc_list]
 
   bam_in.close()
-  if output_sparse:
+  if options.output_sparse:
     fout = "%s.npz" % prefix
     count_matrix = scipy.sparse.csc_matrix(count_matrix) #covert
     np.savez(fout, data = count_matrix.data, indices=count_matrix.indices, 
