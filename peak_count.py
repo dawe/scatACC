@@ -13,11 +13,11 @@ def get_options():
   parser.add_argument('-q', '--quality', help='Min. quality for an alignment to be parsed', type=int, default=15)
   parser.add_argument('-B', '--output-bed', help='Output matrix as bed file (with header)', action='store_true')
   parser.add_argument('-S', '--output-sparse', help='Output matrix as sparse matrix', action='store_true')
-  parser.add_argument('-A', '--output-ann', help='Output matrix as AnnData, suitable for scanpy', action='store_true')
+  parser.add_argument('-A', '--output-anndata', help='Output matrix as AnnData, suitable for scanpy', action='store_true')
   parser.add_argument('-c', '--output-counts', help='Ouput counts over intervals instead of binary data', action='store_true')
   
   options = parser.parse_args()
-  if not options.output_bed and not options.output_sparse and not options.output_ann:
+  if not options.output_bed and not options.output_sparse and not options.output_anndata:
     # for the time being, default output is bed
     options.output_bed = True
 
@@ -27,7 +27,7 @@ def list_cells(header):
   return [x['SM'] for x in header['RG']]
   
 def get_regions(peaks_file):
-  region_tuples = [x.split()[:3] for x in open(options.peaks_file) if not x.startswith('#')]
+  region_tuples = [x.split()[:3] for x in open(peaks_file) if not x.startswith('#')]
   return ["%s:%s-%s" % (x[0], x[1], x[2]) for x in region_tuples]
 
 def main():
@@ -75,7 +75,7 @@ def main():
       spool = [chrom, start, end] + ["%d" % counter[x] for x in bc_list]
       fout.write("\t".join(spool) + "\n")
       counter = dict([(x,0) for x in bc_list])
-    if options.output_sparse:
+    if options.output_sparse or options.output_anndata:
       count_matrix[nl] = [counter[x] for x in bc_list]
 
   bam_in.close()
@@ -89,9 +89,12 @@ def main():
     # loader = np.load(file.npz)
     # count_matrix = scipy.sparse.csr_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])             
   if options.output_anndata:
-    fout = "%s.h5" % prefix
-    count_matrix = scipy.sparse.csr_matrix(count_matrix) #covert
-    adata = anndata.AnnData(count_matrix, var=bc_list, obs=regions)
+    import pandas as pd
+    fout = "%s.h5ad" % prefix
+    count_matrix = scipy.sparse.csr_matrix(count_matrix) #convert
+    adata = anndata.AnnData(count_matrix, var=pd.DataFrame(bc_list, columns=['cell_barcode']),
+                            obs=pd.DataFrame(regions, columns=['region']))
+    adata.write_h5ad(fout)
     
 
 if __name__ == '__main__':
