@@ -45,7 +45,7 @@ def main():
   if options.output_sparse:
     N_regions = len([x for x in open(options.peaks_file) if not x.startswith('#')])
     N_cells = len(bc_list)
-    count_matrix = scipy.sparse.coo_matrix((N_regions, N_cells), dtype=int)
+    count_matrix = scipy.sparse.lil_matrix((N_regions, N_cells), dtype=int)
     
   id2sm = dict([(x['ID'], x['SM']) for x in bam_in.header['RG']])
   
@@ -71,7 +71,6 @@ def main():
       counter = dict([(x,0) for x in bc_list])
     if options.output_sparse:
       count_matrix[nl] = [counter[x] for x in bc_list]
-      1
 
   bam_in.close()
   if output_sparse:
