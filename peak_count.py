@@ -51,7 +51,11 @@ def main():
     regions = get_regions(options.peaks_file)
     N_regions = len(regions)
     N_cells = len(bc_list)
-    count_matrix = scipy.sparse.lil_matrix((N_regions, N_cells), dtype=int)
+    if options.output_counts:
+      dtype = np.uint32 #np.uint16 shoudl be enough, but you neve know
+    else:
+      dtype = np.bool  
+    count_matrix = scipy.sparse.lil_matrix((N_regions, N_cells), dtype=dtype)
     
   id2sm = dict([(x['ID'], x['SM']) for x in bam_in.header['RG']])
   
