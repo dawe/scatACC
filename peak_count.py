@@ -72,9 +72,9 @@ def main():
       if alignment.is_proper_pair and alignment.mapq >= options.quality and alignment.is_read1:
         if options.output_counts:
           # TODO: deduplicate on the fly by hashing reads
-          counter[id2sm[dict(alignment.tags)['RG']]] += 1
+          counter[id2sm[alignment.get_tag('RG')]] += 1
         else:  
-          counter[id2sm[dict(alignment.tags)['RG']]] = 1
+          counter[id2sm[alignment.get_tag('RG')]] = 1
     if options.output_bed:
       spool = [chrom, start, end] + ["%d" % counter[x] for x in bc_list]
       fout.write("\t".join(spool) + "\n")
