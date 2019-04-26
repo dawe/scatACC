@@ -1,12 +1,12 @@
 import pysam
 import argparse
 
-BUFLEN = 8192
 
 def get_options():
   parser = argparse.ArgumentParser(prog='cbdedup.py')
   parser.add_argument('-i', '--bamfile', help='BAM file with alignments', required=True)
   parser.add_argument('-o', '--output', help='Output BAM file', default='output.bam')
+  parser.add_argument('-B', '--buffer', help='Buffer size for dedup', default=65536)
   
   options = parser.parse_args()
   
@@ -44,7 +44,7 @@ def main():
   	  alignment.is_duplicate = True
     hash_in_buffer.add(h_ali)
     buffer.append(alignment)
-    if len(buffer) == BUFLEN:
+    if len(buffer) == options.buffer:
       for ali_out in buffer:
         bam_out.write(ali_out)
       buffer = []
