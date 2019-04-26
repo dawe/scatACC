@@ -78,14 +78,14 @@ def main():
     if options.output_bed:
       spool = [chrom, start, end] + ["%d" % counter[x] for x in bc_list]
       fout.write("\t".join(spool) + "\n")
-      counter = dict([(x,0) for x in bc_list])
     if options.output_sparse or options.output_anndata:
       count_matrix[nl] = [counter[x] for x in bc_list]
+    counter = dict([(x,0) for x in bc_list])
 
   bam_in.close()
   if options.output_sparse:
     fout = "%s.npz" % prefix
-    count_matrix = scipy.sparse.csr_matrix(count_matrix) #covert
+    count_matrix = scipy.sparse.csr_matrix(count_matrix) #convert
     np.savez(fout, data = count_matrix.data, indices=count_matrix.indices, 
              indptr=count_matrix.indptr, shape=count_matrix.shape, bc_list=bc_list)
 
