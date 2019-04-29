@@ -40,7 +40,7 @@ def main():
   for alignment in bam_in:
     duplicate = False
     h_ali = hash_read(alignment)
-    if 	h_ali in hash_in_buffer:
+    if 	h_ali in hash_in_buffer and alignment.is_mapped:
   	  alignment.is_duplicate = True
     hash_in_buffer.add(h_ali)
     buffer.append(alignment)
