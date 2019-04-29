@@ -19,7 +19,7 @@ def get_options():
     sys.stderr.write("You should provide at least one file as input\n")
     sys.exit(1)
 
-  if not options.anndata and (options.sparse and not options.inverse_transform):
+  if not options.anndata and (options.sparse and not options.peaks_file):
   	sys.stderr.write("If you intend to perform transformation without any peak list, output will lack any annotation\n")
 
   if not options.sparse:
