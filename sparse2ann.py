@@ -23,7 +23,7 @@ def get_options():
   	sys.stderr.write("If you intend to perform transformation without any peak list, output will lack any annotation\n")
 
   if not options.sparse:
-    option.sparse = 'output.npz'
+    options.sparse = 'output.npz'
 
   if not options.anndata:
     options.anndata = 'output.h5ad' 	
