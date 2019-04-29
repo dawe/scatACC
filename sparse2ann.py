@@ -3,6 +3,7 @@ import scipy.sparse as sp
 import anndata
 import argparse
 import sys
+import pandas as pd
 
 def get_options():
   parser = argparse.ArgumentParser(prog='sparse2ann.py')
@@ -42,7 +43,7 @@ def main():
       count_matrix = sp.csc_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])
     bc_list = loader['bc_list']
 
-    if count_matrix.shape[0] > count_matrix[1]:
+    if count_matrix.shape[0] > count_matrix.shape[1]:
       # we probably have data in regions by cells, we need it the other way
       count_matrix = sp.csr_matrix(count_matrix.T) #convert
 
@@ -54,9 +55,9 @@ def main():
     
     if options.peaks_file:
       regions = []
-      for line in options.peaks_file:
+      for line in open(options.peaks_file):
         t = line.split()	
-        chrom, start, end = t.split()[:3]
+        chrom, start, end = t[:3]
         r_id = "%s:%s-%s" % (chrom, start, end)
         regions.append(r_id)
       regions = np.array(regions)  
@@ -64,13 +65,14 @@ def main():
       regions = np.arange(count_matrix.shape[1])  
     
     regions = regions[mask]
+    count_matrix = count_matrix[:, mask]
     n_cells = pd.DataFrame(np.array(np.sum(count_matrix > 0, axis=0)).ravel(), index=regions, columns=['n_cells'])
     n_regions = pd.DataFrame(np.array(np.sum(count_matrix > 0, axis=1)).ravel(), index=bc_list, columns=['n_regions'])
     adata = anndata.AnnData(count_matrix, obs=n_regions, var=n_cells)
     adata.write(options.anndata)
 
   else:
-  	adata = anndata.read(options.anndata)
+    adata = anndata.read(options.anndata)
     count_matrix = 	adata.X
     bc_list = np.array(adata.obs.index)
     np.savez(options.sparse, data = count_matrix.data, indices=count_matrix.indices, 
