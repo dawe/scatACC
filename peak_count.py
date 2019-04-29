@@ -84,7 +84,7 @@ def main():
   bam_in.close()
   if options.output_sparse:
     fout = "%s.npz" % prefix
-    count_matrix = scipy.sparse.csr_matrix(count_matrix) #convert
+    count_matrix = scipy.sparse.csr_matrix(count_matrix.T) #convert
     np.savez(fout, data = count_matrix.data, indices=count_matrix.indices, 
              indptr=count_matrix.indptr, shape=count_matrix.shape, bc_list=bc_list)
 
