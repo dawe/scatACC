@@ -47,7 +47,7 @@ def main():
   hash_in_buffer = set()
 
   for alignment in bam_in:
-    duplicate = False
+    alignment.is_duplicate = False #undedup if any
     h_ali = hash_read(alignment)
     if 	h_ali in hash_in_buffer and not alignment.is_unmapped:
   	  alignment.is_duplicate = True
