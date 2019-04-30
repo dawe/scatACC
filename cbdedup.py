@@ -1,12 +1,14 @@
 import pysam
 import argparse
-
+import sys
 
 def get_options():
   parser = argparse.ArgumentParser(prog='cbdedup.py')
   parser.add_argument('-i', '--bamfile', help='BAM file with alignments', required=True)
   parser.add_argument('-o', '--output', help='Output BAM file', default='output.bam')
   parser.add_argument('-B', '--buffer', help='Buffer size for dedup', default=65536)
+  parser.add_argument('-O', '--stdout', help='Output to stdout', action='store_true')
+  parser.add_argument('-I', '--stdin', help='Input from stdin', action='store_true')
   
   options = parser.parse_args()
   
@@ -31,7 +33,14 @@ def main():
   
   options = get_options()
   
+  if options.stdin:
+    options.bamfile = sys.stdin
+    
   bam_in = pysam.Samfile(options.bamfile, 'rb')
+
+  if options.stdout:
+    options.output = sys.stdout
+
   bam_out = pysam.Samfile(options.output, 'wb', template=bam_in)
 
   buffer = []
