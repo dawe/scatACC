@@ -43,7 +43,7 @@ def main():
       count_matrix = sp.csc_matrix((loader['data'], loader['indices'], loader['indptr']), shape=loader['shape'])
     bc_list = loader['bc_list']
 
-    if count_matrix.shape[0] > count_matrix.shape[1]:
+    if count_matrix.shape[1] == len(bc_list):
       # we probably have data in regions by cells, we need it the other way
       count_matrix = sp.csr_matrix(count_matrix.T) #convert
 
