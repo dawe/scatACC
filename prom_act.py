@@ -64,7 +64,7 @@ def main():
     act_matrix[idx] = np.sum(count_matrix * Ed, axis=1)
 
 
-  fout = "%s.npz" % prefix
+  fout = "%s.npz" % options.output
   act_matrix = scipy.sparse.csr_matrix(act_matrix.T) #convert
   np.savez(fout, data = act_matrix.data, indices=act_matrix.indices, 
              indptr=act_matrix.indptr, shape=act_matrix.shape, bc_list=bc_list, 
