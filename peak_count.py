@@ -24,7 +24,7 @@ def get_options():
   return options
 
 def list_cells(header):
-  return [x['SM'] for x in header['RG']]
+  return list(set([x['SM'] for x in header['RG']]))
   
 def get_regions(peaks_file):
   region_tuples = [x.split()[:3] for x in open(peaks_file) if not x.startswith('#')]
