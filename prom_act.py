@@ -54,6 +54,10 @@ def main():
       start, end = end, start
     f_start = start - 5000
     f_end = start + 5000
+    if f_start < 0:
+      f_start = 0
+    if f_end > bam_in.header.get_reference_length(chrom):
+      f_end = bam_in.header.get_reference_length(chrom)
     region_names.append("%s:%d-%d:%s" % (chrom, start, end, g_name))
     count_matrix = np.zeros((N_cells, 10000))
     for alignment in bam_in.fetch(chrom, f_start, f_end):
