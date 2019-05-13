@@ -109,7 +109,7 @@ def main():
       nbin += 1
 
   cna_calls = np.array(cna_calls)      
-  
+  idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.values]
   pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s.pickle" % options.prefix)
   
 
