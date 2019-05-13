@@ -1,5 +1,4 @@
 import sys
-import pysam
 import argparse 
 import scipy.sparse as sp
 import numpy as np
@@ -79,7 +78,7 @@ def main():
   cna_ratio = np.zeros_like(raw_cna)
   for idx in np.arange(len(raw_cna)):
     gc_x = raw_gc.gcContent.values[idx]
-    gc_bin = gcR[(idx >= gcR) ][-1]
+    gc_bin = gcR[(gc_x >= gcR) ][-1]
     idxs = np.array(list(binidx[gc_bin] - {idx}))
     np.random.shuffle(idxs)
     idxs = idxs[:100]
