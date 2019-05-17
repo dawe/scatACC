@@ -15,6 +15,7 @@ def get_options():
   parser.add_argument('-w', '--window-size', help='Window size for CNA analysis', type=int, default=10000000)
   parser.add_argument('-s', '--step-size', help='Step size for CNA analysis', type=int, default=2000000)
   parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
+  parser.add_argument('--no-gc', help='Do not correct for GC content', action='store_true')
 
   
   options = parser.parse_args()
@@ -91,14 +92,11 @@ def main():
     idxs = np.setdiff1d(binidx[gc_bin], [idx])
     np.random.shuffle(idxs)
     idxs = idxs[:100]
-    cna_ratio[idx] = (raw_cna[idx] / E) / (np.mean(raw_cna[idxs] / E, axis=0))
+    if options.no_gc:
+      cna_ratio[idx] = (raw_cna[idx] / E) 
+    else:  
+      cna_ratio[idx] = (raw_cna[idx] / E) / (np.mean(raw_cna[idxs] / E, axis=0))
     
-  logcn = np.log2(cna_ratio)
-  min_l = np.nanmin(logcn[logcn > -np.inf])
-  max_l = np.nanmin(logcn[logcn < np.inf])
-  logcn[logcn == -np.inf] = min_l
-  logcn[logcn == np.inf] = max_l
-  
   cna_calls = []
   nbin = 0
   cna_gr = pr.PyRanges()
@@ -114,13 +112,14 @@ def main():
       nbin += 1
 
   cna_calls = np.array(cna_calls)      
+  idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.values]
+  
   pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s_raw_calls.pickle" % options.prefix)
   cna_calls = np.round(2**cna_calls)
   cna_calls[cna_calls < 0] = 0
   cna_calls[cna_calls > options.trim_max] = options.trim_max # trim extremes
   cna_calls[np.isnan(cna_calls)] = 2 #assume diploid when no data are available
   
-  idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.values]
   pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s_cna_calls.pickle" % options.prefix)
   
 

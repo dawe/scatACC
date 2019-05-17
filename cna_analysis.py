@@ -8,11 +8,13 @@ import pyranges as pr
 
 def get_options():
   parser = argparse.ArgumentParser(prog='cna_analysis.py')
-  parser.add_argument('-i', '--input-file', help='AnnData File with binned counts', required=True)
+  parser.add_argument('-i', '--input-file', help='AnnData File with binned counts', nargs = '+')
   parser.add_argument('-g', '--gcContent', help='GC content file (bed file)')
   parser.add_argument('-p', '--prefix', help='Prefix for output file')
   parser.add_argument('-w', '--window-size', help='Window size for CNA analysis', type=int, default=10000000)
   parser.add_argument('-s', '--step-size', help='Step size for CNA analysis', type=int, default=2000000)
+  parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
+  parser.add_argument('--no-gc', help='Do not correct for GC content', action='store_true')
 
   
   options = parser.parse_args()
@@ -24,16 +26,10 @@ def get_options():
   return options
 
 def gc2binidx(gcContent, resolution=0.05):
-  binidx = {}
-  for x in np.arange(0, 1, resolution):
-    binidx[x] = set(np.where((gcContent >= x  ) & (gcContent < x + resolution))[0])
-  return binidx
-
-def callcna(v, trim=4):
-  v = v + 1.5
-  v[v < 0] = 0
-  v[v > trim] = trim
-  return v // 1
+    binidx = {}
+    for x in np.arange(0, 1, resolution):
+        binidx[x] =  np.where((gcContent >= x  ) & (gcContent < x + resolution))[0] 
+    return binidx
 
 def main():
   options = get_options()
@@ -41,8 +37,11 @@ def main():
   step_size = options.step_size
 
 
-  adata = sc.read(options.input_file)
+  adata = sc.read(options.input_file[0])
   data_mat = sp.csc_matrix(adata.X) #we are going to perform lots of column slicing, CSC may be better
+  for f in options.input_file[1:]:
+    adata = sc.read(f)
+    data_mat = data_mat + sp.csc_matrix(adata.X)
   gcContent = pr.read_bed(options.gcContent)
   gcContent.gcCount = gcContent.Name
   gcContent = gcContent.drop('Score').drop('Name')
@@ -69,49 +68,44 @@ def main():
       raw_gc = pr.concat([raw_gc, this_gc])
       nbin += 1
 
-  raw_cna = np.array(raw_cna)
+  raw_cna = np.array(raw_cna) + 0.5
   binidx = gc2binidx(raw_gc.gcContent.values, resolution = 0.05)
+  M_raw = np.mean(raw_cna, axis=0)
 
   gcR = np.arange(0, 1, 0.05)
   cna_ratio = np.zeros_like(raw_cna)
   for idx in np.arange(len(raw_cna)):
     gc_x = raw_gc.gcContent.values[idx]
     gc_bin = gcR[(gc_x >= gcR) ][-1]
-    idxs = np.array(list(binidx[gc_bin] - {idx}))
+    idxs = np.setdiff1d(binidx[gc_bin], [idx])
     np.random.shuffle(idxs)
     idxs = idxs[:100]
-    mean_cna = raw_cna[idxs].mean(axis=0)
-    cna_r = (0.5 + raw_cna[idx]) / (0.5 + mean_cna)
-#    cna_r[np.isnan(cna_r)] = raw_cna[idx][np.isnan(cna_r)] #possibly the most wrong thing to do
-    cna_ratio[idx] = cna_r
+    if options.no_gc:
+      cna_ratio[idx] = raw_cna[idx] / M_raw
+    else:
+      cna_ratio[idx] = raw_cna[idx] /  np.mean(raw_cna[idxs], axis=0)
     
-  logcn = np.log2(cna_ratio)
-  min_l = np.nanmin(logcn[logcn > -np.inf])
-  max_l = np.nanmin(logcn[logcn < np.inf])
-  logcn[logcn == -np.inf] = min_l
-  logcn[logcn == np.inf] = max_l
-  
   cna_calls = []
-  lcn_calls = []
+  raw_calls = []
   nbin = 0
   cna_gr = pr.PyRanges()
   for _chr in chrom_list:
     chrom_size = gcContent[_chr].End.max()
     for r_start in np.arange(0, chrom_size, window_size):
       r_end = r_start + window_size
+      if r_end > chrom_size:
+        r_end = chrom_size
       idxs = raw_gc[_chr, r_start:r_end].binidx.values
-      a_logcn = logcn[idxs].mean(axis=0)
-      cna_calls.append(callcna(a_logcn, trim=4))
-      lcn_calls.append(a_logcn)
+      cna_calls.append(np.mean(cna_ratio[idxs], axis=0))
       this_seg = pr.PyRanges(chromosomes=_chr, starts=[r_start], ends=[r_end])
       this_seg.binidx = nbin
       cna_gr = pr.concat([cna_gr, this_seg])
       nbin += 1
 
-  cna_calls = np.array(cna_calls)      
   idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.values]
-  pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s_cna_calls.pickle" % options.prefix)
-  pd.DataFrame(lcn_calls, index=idx, columns=adata.obs.index).to_pickle("%s_log2CN.pickle" % options.prefix)
+  cna_calls = np.array(cna_calls)      
+  pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s_raw_calls.pickle" % options.prefix)
+  pd.DataFrame(np.round(2 * cna_calls), index=idx, columns=adata.obs.index).to_pickle("%s_cna_calls.pickle" % options.prefix)
   
 
 
