@@ -15,6 +15,7 @@ def get_options():
   parser.add_argument('-s', '--step-size', help='Step size for CNA analysis', type=int, default=2000000)
   parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
   parser.add_argument('--no-gc', help='Do not correct for GC content', action='store_true')
+  parser.add_argument('--keep-bg', help='Keep background data (if any)', action='store_true')
 
   
   options = parser.parse_args()
@@ -42,6 +43,9 @@ def main():
   for f in options.input_file[1:]:
     adata = sc.read(f)
     data_mat = data_mat + sp.csc_matrix(adata.X)
+  if not options.keep_bg:
+    data_mat =data_mat[:-1]
+      
   gcContent = pr.read_bed(options.gcContent)
   gcContent.gcCount = gcContent.Name
   gcContent = gcContent.drop('Score').drop('Name')
@@ -68,7 +72,8 @@ def main():
       raw_gc = pr.concat([raw_gc, this_gc])
       nbin += 1
 
-  raw_cna = np.array(raw_cna) + 0.5
+  coverage = np.array(data_mat.sum(axis=1)).ravel()
+  raw_cna = np.array(raw_cna) + 0.5 # add pseudocounts
   binidx = gc2binidx(raw_gc.gcContent.values, resolution = 0.05)
   M_raw = np.mean(raw_cna, axis=0)
 
@@ -83,7 +88,8 @@ def main():
     if options.no_gc:
       cna_ratio[idx] = raw_cna[idx] / M_raw
     else:
-      cna_ratio[idx] = raw_cna[idx] /  np.mean(raw_cna[idxs], axis=0)
+      cna_ratio[idx] = raw_cna[idx] / np.mean(raw_cna[idxs], axis=0)
+    #  cna_ratio[idx] = raw_cna[idx] /  np.mean(raw_cna[idxs], axis=0)  
     
   cna_calls = []
   raw_calls = []
@@ -102,10 +108,16 @@ def main():
       cna_gr = pr.concat([cna_gr, this_seg])
       nbin += 1
 
-  idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.values]
+  idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in cna_gr.df.sort_values('binidx').values]
+  cols = adata.obs.index
+  if not options.keep_bg:
+    cols = cols[:-1]
   cna_calls = np.array(cna_calls)      
-  pd.DataFrame(cna_calls, index=idx, columns=adata.obs.index).to_pickle("%s_raw_calls.pickle" % options.prefix)
-  pd.DataFrame(np.round(2 * cna_calls), index=idx, columns=adata.obs.index).to_pickle("%s_cna_calls.pickle" % options.prefix)
+  pd.DataFrame(cna_calls, index=idx, columns=cols).to_pickle("%s_raw_calls.pickle" % options.prefix)
+  f_corr = 2 / np.median(cna_calls) #assuming diploids
+  cna_calls = np.round(f_corr * cna_calls)
+  cna_calls[cna_calls > options.trim_max] = options.trim_max
+  pd.DataFrame(cna_calls, index=idx, columns=cols).to_pickle("%s_cna_calls.pickle" % options.prefix)
   
 
 
