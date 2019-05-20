@@ -54,23 +54,32 @@ def main():
   
   chrom_list = gcContent.Chromosome.cat.categories
   
-  raw_cna = []
-  raw_gc = pr.PyRanges()
-  
+  raw_gc = []
   nbin = 0
   for _chr in chrom_list:
     chrom_size = gcContent[_chr].End.max()
     for r_start in np.arange(0, chrom_size, step_size):
       r_end = r_start + window_size
-      raw_cna.append(np.array(data_mat[:, gcContent[_chr, r_start:r_end].data_idx].sum(axis=1) ).ravel())
       intv_len = window_size
       if r_end > chrom_size:
         intv_len = chrom_size - r_start
-      this_gc = pr.PyRanges(chromosomes=_chr, starts=[r_start], ends=[r_end])
-      this_gc.gcContent = gcContent[_chr, r_start:r_end].gcCount.sum() / intv_len
-      this_gc.binidx = nbin
-      raw_gc = pr.concat([raw_gc, this_gc])
+      try:
+        _gc = gcContent[_chr, r_start:r_end].gcCount.sum() / intv_len
+      except IndexError:
+        _gc = 0.0
+      raw_gc.append([_chr, r_start, r_end, _gc, nbin])    
       nbin += 1
+
+  raw_gc = pr.PyRanges(pd.DataFrame(raw_gc, columns = ['Chromosome', 'Start', 'End', 'gcContent', 'binidx']))
+  
+  raw_cna = np.zeros((len(raw_gc), data_mat.shape[0]))
+  for _chr, df in raw_gc:
+    for entry in df.values:
+      try:
+        _v = data_mat[:, gcContent[entry[0], entry[1]:entry[2]].data_idx].sum(axis=1).ravel()
+      except IndexError:
+        _v = 0  
+      raw_cna[entry[4]] = _v
 
   coverage = np.array(data_mat.sum(axis=1)).ravel()
   raw_cna = np.array(raw_cna) + 0.5 # add pseudocounts
@@ -91,8 +100,9 @@ def main():
       cna_ratio[idx] = raw_cna[idx] / np.mean(raw_cna[idxs], axis=0)
     #  cna_ratio[idx] = raw_cna[idx] /  np.mean(raw_cna[idxs], axis=0)  
     
-  cna_calls = []
-  raw_calls = []
+  cna_size = np.sum([gcContent[_chr].End.max() // window_size + 1 for _chr in chrom_list])
+  cna_calls = np.zeros((cna_size, data_mat.shape[0]))
+  raw_calls = np.zeros((cna_size, data_mat.shape[0]))
   nbin = 0
   cna_gr = pr.PyRanges()
   for _chr in chrom_list:
@@ -102,7 +112,7 @@ def main():
       if r_end > chrom_size:
         r_end = chrom_size
       idxs = raw_gc[_chr, r_start:r_end].binidx.values
-      cna_calls.append(np.mean(cna_ratio[idxs], axis=0))
+      cna_calls[nbin] = np.mean(cna_ratio[idxs], axis=0)
       this_seg = pr.PyRanges(chromosomes=_chr, starts=[r_start], ends=[r_end])
       this_seg.binidx = nbin
       cna_gr = pr.concat([cna_gr, this_seg])
