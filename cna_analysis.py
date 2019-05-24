@@ -50,7 +50,9 @@ def main():
   gcContent.gcCount = gcContent.Name
   gcContent = gcContent.drop('Score').drop('Name')
   
-  gcContent.data_idx = np.arange(len(gcContent))
+  bin_df = pd.DataFrame([x.replace(':', '\t').replace('-', '\t').split() for x in adata.var.index], columns=['Chromosome', 'Start', 'End'])
+  bin_df.loc[:, 'data_idx'] = np.arange(len(bin_df))
+  bin_df = pr.PyRanges(bin_df)
   
   chrom_list = gcContent.Chromosome.cat.categories
   
@@ -76,7 +78,7 @@ def main():
   for _chr, df in raw_gc:
     for entry in df.values:
       try:
-        _v = data_mat[:, gcContent[entry[0], entry[1]:entry[2]].data_idx].sum(axis=1).ravel()
+        _v = data_mat[:, bin_df[entry[0], entry[1]:entry[2]].data_idx].sum(axis=1).ravel()
       except IndexError:
         _v = 0  
       raw_cna[entry[4]] = _v
