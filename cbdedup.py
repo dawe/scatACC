@@ -34,9 +34,9 @@ def main():
   options = get_options()
   
   if options.stdin:
-    options.bamfile = sys.stdin
-    
-  bam_in = pysam.Samfile(options.bamfile, 'rb')
+    bam_in = pysam.Samfile('-', 'r')
+  else:
+    bam_in = pysam.Samfile(options.bamfile, 'rb')
 
   if options.stdout:
     options.output = sys.stdout

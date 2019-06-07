@@ -83,16 +83,16 @@ def main():
   sys.stderr.write("Processing BAM File\n")  
   
   if options.stdin:
-    options.bamfile = sys.stdin
-    
-  bam_in = pysam.Samfile(options.bamfile, 'rb')
+    bam_in = pysam.Samfile('-','r')
+  else:    
+    bam_in = pysam.Samfile(options.bamfile, 'rb')
   
   header = build_header(bam_in.header, coder, options.group, options.keep_unmatched)
   
   if options.stdout:
-    options.output = sys.stdout
-    
-  bam_out = pysam.Samfile(options.output, 'wb', header=header)
+    bam_out = pysam.Samfile("-", 'wb', header=header)
+  else:
+    bam_out = pysam.Samfile(options.output, 'wb', header=header)
   
   for r in bam_in:
     if r.qname in namer:
