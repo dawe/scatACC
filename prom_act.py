@@ -11,6 +11,8 @@ def get_options():
   parser.add_argument('-b', '--bamfile', help='BAM file with alignments', required=True)
   parser.add_argument('-o', '--output', help='Prefix for output file')
   parser.add_argument('-q', '--quality', help='Min. quality for an alignment to be parsed', type=int, default=15)
+  parser.add_argument('-D', '--decay', help='Size of decay factor', default=1000)
+  parser.add_argument('-w', '--window', help='Size of the window around the promoter', default=5000)
 
   
   options = parser.parse_args()
@@ -27,6 +29,9 @@ def get_regions(peaks_file):
 
 def main():
   options = get_options()
+  
+  win_size = options.window
+  decay = options.decay
 
 
   # we assume all barcodes are stored as samples in the input bamfile header (by RG)
@@ -44,7 +49,7 @@ def main():
   id2idx = dict([(bc_list[x], x) for x in range(len(bc_list))])
 
 
-  D = np.abs(np.arange(10000) - 5000) / 1000 #1000 should be a parameter
+  D = np.abs(np.arange(2*win_size) - win_size) / decay #1000 should be a parameter
   Ed = np.exp(-D)
   
   region_names = []
@@ -52,17 +57,17 @@ def main():
     chrom, start, end, g_name, _, g_strand = regions.loc[idx]
     if g_strand == '-':
       start, end = end, start
-    f_start = start - 5000
-    f_end = start + 5000
+    f_start = start - win_size
+    f_end = start + win_size
     if f_start < 0:
       f_start = 0
     if f_end > bam_in.header.get_reference_length(chrom):
       f_end = bam_in.header.get_reference_length(chrom)
     region_names.append("%s:%d-%d:%s" % (chrom, start, end, g_name))
-    count_matrix = np.zeros((N_cells, 10000))
+    count_matrix = np.zeros((N_cells, 2*win_size))
     for alignment in bam_in.fetch(chrom, f_start, f_end):
       if alignment.is_proper_pair and alignment.mapq >= options.quality and alignment.is_read1 and not alignment.is_duplicate:
-        offset = alignment.pos - start + 5000
+        offset = alignment.pos - start + win_size
         cell_n = id2idx[id2sm[alignment.get_tag('RG')]]
         count_matrix[cell_n, offset] += 1
     act_matrix[idx] = np.sum(count_matrix * Ed, axis=1)
