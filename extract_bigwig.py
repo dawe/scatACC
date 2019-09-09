@@ -54,7 +54,7 @@ def main():
     for _c in chrom_sizes.keys():
       cmask = np.array([x.split(':')[0] == _c for x in adata.var.index])
       if np.sum(cmask) > 0:
-        fout.addEntries(_c, 0, values = adata[keep_cells[cx]][:, cmask].X, span=5000, step=5000)
+        fout.addEntries(_c, 0, values = adata[keep_cells[cx]].X[cmask], span=5000, step=5000)
     fout.close()    
 
 if __name__ == '__main__':
