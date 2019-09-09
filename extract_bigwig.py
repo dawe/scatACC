@@ -5,6 +5,7 @@ import scipy.sparse
 import numpy as np
 import pandas as pd
 import pyBigWig
+import scanpy as sc
 
 def get_options():
   parser = argparse.ArgumentParser(prog='extract_bigwig.py')
@@ -42,7 +43,7 @@ def main():
   else:  
     n_extract = options.cell_number
   
-  keep_cells = data.obs.sort_values('n_regions', ascending=False).index[:n_extract]
+  keep_cells = adata.obs.sort_values('n_regions', ascending=False).index[:n_extract]
   adata = adata[keep_cells]
   
   
@@ -51,9 +52,9 @@ def main():
     fout = pyBigWig.open("%s%s" % (out_prefix, keep_cells[cx]), 'wb')
     fout.addHeader(header)
     for _c in chrom_sizes.keys():
-      cmask = np.array([x.split(':')[0] == _c for x in data.var.index])
+      cmask = np.array([x.split(':')[0] == _c for x in adata.var.index])
       if np.sum(cmask) > 0:
-        fout.addEntries(_c, 0, values = data[keep_cells[cx]][:, cmask].X, span=5000, step=5000)
+        fout.addEntries(_c, 0, values = adata[keep_cells[cx]][:, cmask].X, span=5000, step=5000)
     fout.close()    
 
 if __name__ == '__main__':
