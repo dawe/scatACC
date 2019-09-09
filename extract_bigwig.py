@@ -49,7 +49,7 @@ def main():
   
   
   for cx in range(len(keep_cells)):
-    fout = pyBigWig.open("%s%s" % (out_prefix, keep_cells[cx]), 'wb')
+    fout = pyBigWig.open("%s%s.bigwig" % (out_prefix, keep_cells[cx]), 'wb')
     fout.addHeader(header)
     for _c in chrom_sizes.keys():
       cmask = np.array([x.split(':')[0] == _c for x in adata.var.index])
