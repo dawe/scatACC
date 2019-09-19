@@ -113,7 +113,7 @@ def main():
 			#pad one 0
 		D[D > options.trim_max] = options.trim_max
 		cW = pywt.wavedec(D, 'haar', axis=0, mode='constant')
-		for cX in range(1, 2**red_coef + 1):
+		for cX in range(1, min(len(cW), 2**red_coef + 1)):
 			cW[-cX] = np.zeros_like(cW[-cX])
 		R = pywt.waverec(cW, 'haar', axis=0, mode='constant')
 		if _odd:
