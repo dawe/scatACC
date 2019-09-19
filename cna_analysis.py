@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import pyranges as pr
+import pywavelets as pywt
 
 def get_options():
   parser = argparse.ArgumentParser(prog='cna_analysis.py')
@@ -26,16 +27,15 @@ def get_options():
 
   return options
 
-def gc2binidx(gcContent, resolution=0.05):
-    binidx = {}
-    for x in np.arange(0, 1, resolution):
-        binidx[x] =  np.where((gcContent >= x  ) & (gcContent < x + resolution))[0] 
-    return binidx
 
 def main():
+  gc_resolution = 0.2
   options = get_options()
   window_size = options.window_size
   step_size = options.step_size
+  
+  red_coef = int(np.round(np.log2(window_size / step_size)))
+  window_size = window_size / red_coef
 
 
   adata = sc.read(options.input_file[0])
@@ -60,7 +60,7 @@ def main():
   nbin = 0
   for _chr in chrom_list:
     chrom_size = gcContent[_chr].End.max()
-    for r_start in np.arange(0, chrom_size, step_size):
+    for r_start in np.arange(0, chrom_size, window_size):
       r_end = r_start + window_size
       intv_len = window_size
       if r_end > chrom_size:
@@ -85,20 +85,17 @@ def main():
 
   coverage = np.array(data_mat.sum(axis=1)).ravel()
   raw_cna = np.array(raw_cna) + 0.5 # add pseudocounts
-  binidx = gc2binidx(raw_gc.gcContent.values, resolution = 0.05)
   M_raw = np.mean(raw_cna, axis=0)
 
-  gcR = np.arange(0, 1, 0.05)
+  raw_gc.gc_bin = np.digitize(raw_gc.gcContent.values, bins=np.arange(0, 1, gc_resolution))
   cna_ratio = np.zeros_like(raw_cna)
   for idx in np.arange(len(raw_cna)):
-    gc_x = raw_gc.gcContent.values[idx]
-    gc_bin = gcR[(gc_x >= gcR) ][-1]
-    idxs = np.setdiff1d(binidx[gc_bin], [idx])
-    np.random.shuffle(idxs)
-    idxs = idxs[:100]
     if options.no_gc:
       cna_ratio[idx] = raw_cna[idx] / M_raw
     else:
+      idxs = gc_bin = np.setdiff1d(np.where(raw_gc.gc_bin.values == raw_gc.gc_bin.values[idx])[0], [idx])
+      np.random.shuffle(idxs)
+      idxs = idxs[:100]
       cna_ratio[idx] = raw_cna[idx] / np.mean(raw_cna[idxs], axis=0)
     #  cna_ratio[idx] = raw_cna[idx] /  np.mean(raw_cna[idxs], axis=0)  
     
