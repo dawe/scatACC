@@ -105,7 +105,8 @@ def main():
 	nbin = 0
 	for _chr in chrom_list:
 		chrom_size = gcContent[_chr].End.max()
-		D = np.log2(cna_ratio[raw_gc[_chr].binidx.values])
+		idxs = raw_gc[_chr].binidx.values
+		D = cna_ratio[idxs]
 		_odd = False
 		if D.shape[0] % 2 == 1:
 			D = np.concatenate([D, np.zeros(D.shape[1])[None]], axis=0)
@@ -113,12 +114,12 @@ def main():
 			#pad one 0
 		D[D > options.trim_max] = options.trim_max
 		cW = pywt.wavedec(D, 'haar', axis=0, mode='constant')
-		for cX in range(1, min(len(cW), 2**red_coef + 1)):
+		for cX in range(1, min(len(cW), 2**red_coef + 2)):
 			cW[-cX] = np.zeros_like(cW[-cX])
 		R = pywt.waverec(cW, 'haar', axis=0, mode='constant')
 		if _odd:
 			R = R[:-1]
-		idxs = raw_gc[_chr].binidx.values
+		
 		cna_calls[idxs] = R
 
 	idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in raw_gc.df.sort_values('binidx').values]
@@ -129,7 +130,7 @@ def main():
 #	f_corr = 2 / np.median(cna_calls) #assuming diploids
 #	cna_calls = np.round(f_corr * cna_calls)
 #	cna_calls[cna_calls > options.trim_max] = options.trim_max
-	cna_calls = np.digitize(cna_calls, bins=[np.log2((X+.5) / 2) for X in range(10)] ) 
+	cna_calls = np.digitize(cna_calls, bins=[X / 2 for X in range(10)] ) 
 	pd.DataFrame(cna_calls, index=idx, columns=cols).to_pickle("%s_cna_calls.pickle" % options.prefix)
 	
 
