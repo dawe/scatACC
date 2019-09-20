@@ -84,7 +84,7 @@ def main():
 			raw_cna[entry[4]] = _v
 
 	coverage = np.array(data_mat.sum(axis=1)).ravel()
-	raw_cna = np.array(raw_cna) + 0.05 # add pseudocounts
+	raw_cna = np.array(raw_cna) + 0.5 # add pseudocounts
 	if options.no_gc:
 		M_raw = np.mean(raw_cna, axis=0)
 
