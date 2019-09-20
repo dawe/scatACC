@@ -85,7 +85,8 @@ def main():
 
 	coverage = np.array(data_mat.sum(axis=1)).ravel()
 	raw_cna = np.array(raw_cna) + 0.05 # add pseudocounts
-	M_raw = np.mean(raw_cna, axis=0)
+	if options.no_gc:
+		M_raw = np.mean(raw_cna, axis=0)
 
 	raw_gc.gc_bin = np.digitize(raw_gc.gcContent.values, bins=np.arange(0, 1, gc_resolution))
 	cna_ratio = np.zeros_like(raw_cna)
