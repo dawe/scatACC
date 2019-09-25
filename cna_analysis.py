@@ -73,17 +73,30 @@ def main():
 			nbin += 1
 
 	raw_gc = pr.PyRanges(pd.DataFrame(raw_gc, columns = ['Chromosome', 'Start', 'End', 'gcContent', 'binidx']))
-	
+	coords = [x.replace(':','\t').replace('-', '\t').split() for x in adata.var_names]
+	coords = pd.DataFrame(coords, columns = ['Chromosome', 'Start', 'End'])             
+	coords.loc[:, 'binidx'] = coords.index
+	coords = pr.Pyranges(coords)
 	raw_cna = np.zeros((len(raw_gc), data_mat.shape[0]))
 	for _chr, df in raw_gc:
-		for entry in df.values:
-			try:
-				_v = data_mat[:, bin_df[entry[0], entry[1]:entry[2]].data_idx].sum(axis=1).ravel()
-			except IndexError:
-				_v = 0	
-			raw_cna[entry[4]] = _v
+		idxs = coords[_chr].binidx.values
+		sidxs = raw_gc[_chr].binidx.values		
+		_data = data_mat[:, idxs].toarray()
+		l_bins = window_size // 5000
+		pad_size = l_bins - (_data.shape[1] % l_bins)
+		if pad_size:
+			_data = np.concatenate([_data, np.zeros((_data.shape[0], pad_size))], axis=1)
+		n_bins = _data.shape[1] // l_bins
+		_data = _data.reshape((_data.shape[0], n_bins, l_bins))
+		raw_cna[sidxs] = _data.sum(axis=2).T
+#		for entry in df.values:
+#			try:
+#				_v = data_mat[:, bin_df[entry[0], entry[1]:entry[2]].data_idx].sum(axis=1).ravel()
+#			except IndexError:
+#				_v = 0	
+#			raw_cna[entry[4]] = _v
 
-	coverage = np.array(data_mat.sum(axis=1)).ravel()
+	coverage = adata.obs.values.ravel()
 	raw_cna = np.array(raw_cna) + 0.5 # add pseudocounts
 	if options.no_gc:
 		M_raw = np.mean(raw_cna, axis=0)
@@ -103,7 +116,6 @@ def main():
 	cna_size = np.sum([gcContent[_chr].End.max() // window_size + 1 for _chr in chrom_list])
 	cna_calls = np.zeros((cna_size, data_mat.shape[0]))
 	raw_calls = np.zeros((cna_size, data_mat.shape[0]))
-	nbin = 0
 	for _chr in chrom_list:
 		chrom_size = gcContent[_chr].End.max()
 		idxs = raw_gc[_chr].binidx.values
@@ -131,7 +143,7 @@ def main():
 #	f_corr = 2 / np.median(cna_calls) #assuming diploids
 #	cna_calls = np.round(f_corr * cna_calls)
 #	cna_calls[cna_calls > options.trim_max] = options.trim_max
-	cna_calls = np.digitize(cna_calls, bins=[X / 2 for X in range(10)] ) 
+	cna_calls = np.digitize(cna_calls, bins=[X / 2 for X in range(options.trim_max)] ) 
 	pd.DataFrame(cna_calls, index=idx, columns=cols).to_pickle("%s_cna_calls.pickle" % options.prefix)
 	
 
