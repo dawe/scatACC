@@ -76,7 +76,7 @@ def main():
 	coords = [x.replace(':','\t').replace('-', '\t').split() for x in adata.var_names]
 	coords = pd.DataFrame(coords, columns = ['Chromosome', 'Start', 'End'])             
 	coords.loc[:, 'binidx'] = coords.index
-	coords = pr.Pyranges(coords)
+	coords = pr.PyRanges(coords)
 	raw_cna = np.zeros((len(raw_gc), data_mat.shape[0]))
 	for _chr, df in raw_gc:
 		idxs = coords[_chr].binidx.values
