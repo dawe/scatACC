@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import scanpy as sc
 import pyranges as pr
-import pywavelets as pywt
+import pywt
 
 def get_options():
 	parser = argparse.ArgumentParser(prog='cna_analysis.py')
