@@ -68,6 +68,8 @@ def main():
     if line.startswith('#'):
       continue
     chrom, start, end = line.split()[:3]
+    if not chrom in bam_in.header.references:
+      continue
     for alignment in bam_in.fetch(chrom, int(start), int(end)):
       if alignment.is_proper_pair and alignment.mapq >= options.quality and alignment.is_read1:
         if options.output_counts and not alignment.is_duplicate:
