@@ -84,7 +84,7 @@ def main():
 		_data = data_mat[:, idxs].toarray()
 		l_bins = window_size // 5000
 		pad_size = l_bins - (_data.shape[1] % l_bins)
-		if pad_size:
+		if pad_size < l_bins:
 			_data = np.concatenate([_data, np.zeros((_data.shape[0], pad_size))], axis=1)
 		n_bins = _data.shape[1] // l_bins
 		_data = _data.reshape((_data.shape[0], n_bins, l_bins))
