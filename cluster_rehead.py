@@ -27,17 +27,15 @@ def main():
   header_in = bam_in.header.as_dict()
 
   try:
-    clusters = pd.read_pickle(options.clusters)
-  except KeyError:
     clusters = pd.read_table(options.clusters, index_col=0, header=None)
-    if type(clusters.index[0]) != str:
-      clusters = pd.read_table(options.clusters, index_col=0)
+  except UnicodeDecodeError:
+    clusters = pd.read_pickle(options.clusters)
 
   clusters = dict(clusters.iloc[:, 0])
   header_out = header_in.copy()
-  _ = header_out.pop('RG')
+  header_out['RG'] = []
   cell_to_remove = set()
-  for rid in header_out['RG']:
+  for rid in header_in['RG']:
     cell_name =  rid['ID']
     if not cell_name in clusters:
       if options.send_bg:
