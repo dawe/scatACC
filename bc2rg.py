@@ -54,7 +54,7 @@ def build_header(in_header, coder, group = '', keep_unmatched=True):
     _pl = _pu = _lb = _cn = 'default'
   _rg = []
   for bc in coder.values():
-    _rg.append({'ID': "%s_%s" % (bc, group),
+    _rg.append({'ID': "%s-%s" % (bc, group),
                 'PL':_pl,
                 'PU':_pu,
                 'LB':_lb,
@@ -96,11 +96,11 @@ def main():
   
   for r in bam_in:
     if r.qname in namer:
-      rg = "%s_%s" % (namer[r.qname], options.group)
+      rg = "%s-%s" % (namer[r.qname], options.group)
     else:
       if not options.keep_unmatched:
         continue
-      rg = 'Background_%s' % options.group
+      rg = 'Background-%s' % options.group
 
     tags = [x for x in r.tags if x[0] != 'RG']
     tags.append(('RG', rg))
