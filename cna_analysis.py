@@ -13,7 +13,7 @@ def get_options():
 	parser.add_argument('-g', '--gcContent', help='GC content file (bed file)')
 	parser.add_argument('-p', '--prefix', help='Prefix for output file')
 	parser.add_argument('-w', '--window-size', help='Window size for CNA analysis', type=int, default=10000000)
-	parser.add_argument('-s', '--step-size', help='Step size for CNA analysis', type=int, default=2000000)
+	parser.add_argument('-s', '--bin-size', help='Bin size in original matrix', type=int, default=5000)
 	parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
 	parser.add_argument('--no-gc', help='Do not correct for GC content', action='store_true')
 	parser.add_argument('--keep-bg', help='Keep background data (if any)', action='store_true')
@@ -21,9 +21,9 @@ def get_options():
 	
 	options = parser.parse_args()
 
-	if options.step_size > options.window_size:
+	if options.bin_size > options.window_size:
 		sys.stderr.write("Step size cannot be larger than window size\nSetting it to %d" % options.window_size)
-		options.step_size = options.window_size
+		options.bin_size = options.window_size
 
 	return options
 
@@ -32,10 +32,10 @@ def main():
 	gc_resolution = 0.2
 	options = get_options()
 	window_size = options.window_size
-	step_size = options.step_size
+	bin_size = options.bin_size
 	
-	red_coef = int(np.round(np.log2(window_size / step_size)))
-	window_size = window_size >> red_coef
+	red_coef = int(np.round(np.log2(window_size / bin_size))) + 1
+#	window_size = window_size >> red_coef
 
 
 	adata = sc.read(options.input_file[0])
@@ -82,7 +82,7 @@ def main():
 		idxs = coords[_chr].binidx.values
 		sidxs = raw_gc[_chr].binidx.values		
 		_data = data_mat[:, idxs].toarray()
-		l_bins = window_size // 5000
+		l_bins = window_size // bin_size
 		pad_size = l_bins - (_data.shape[1] % l_bins)
 		if pad_size < l_bins:
 			_data = np.concatenate([_data, np.zeros((_data.shape[0], pad_size))], axis=1)
@@ -127,7 +127,7 @@ def main():
 			#pad one 0
 		D[D > options.trim_max] = options.trim_max
 		cW = pywt.wavedec(D, 'haar', axis=0, mode='constant')
-		for cX in range(1, min(len(cW), 2**red_coef + 2)):
+		for cX in range(1, min(len(cW) - 1, red_coef)):
 			cW[-cX] = np.zeros_like(cW[-cX])
 		R = pywt.waverec(cW, 'haar', axis=0, mode='constant')
 		if _odd:
