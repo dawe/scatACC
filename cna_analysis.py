@@ -14,9 +14,10 @@ def get_options():
 	parser.add_argument('-p', '--prefix', help='Prefix for output file')
 	parser.add_argument('-w', '--window-size', help='Window size for CNA analysis', type=int, default=10000000)
 	parser.add_argument('-b', '--bin-size', help='Bin size in original matrix', type=int, default=5000)
-	parser.add_argument('-s', '--smooth', help='Smoothing coefficient', type=int, default=1)
 	parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
 	parser.add_argument('--no-gc', help='Do not correct for GC content', action='store_true')
+	parser.add_argument('--smooth', help='Smooth data', action='store_true')
+	parser.add_argument('-C', '--smoothing-coefficient', help='Smoothing coefficient', type=int, default=1)
 	parser.add_argument('--keep-bg', help='Keep background data (if any)', action='store_true')
 
 	
@@ -35,7 +36,7 @@ def main():
 	window_size = options.window_size
 	bin_size = options.bin_size
 	
-	red_coef = options.smooth
+	red_coef = options.smoothing_coefficient
 #	window_size = window_size >> red_coef
 
 
@@ -115,26 +116,28 @@ def main():
 		#	cna_ratio[idx] = raw_cna[idx] /	np.mean(raw_cna[idxs], axis=0)	
 		
 	cna_size = np.sum([gcContent[_chr].End.max() // window_size + 1 for _chr in chrom_list])
-	cna_calls = np.zeros((cna_size, data_mat.shape[0]))
-	raw_calls = np.zeros((cna_size, data_mat.shape[0]))
-	for _chr in chrom_list:
-		chrom_size = gcContent[_chr].End.max()
-		idxs = raw_gc[_chr].binidx.values
-		D = cna_ratio[idxs]
-		_odd = False
-		if D.shape[0] % 2 == 1:
-			D = np.concatenate([D, np.zeros(D.shape[1])[None]], axis=0)
-			_odd = True
-			#pad one 0
-		D[D > options.trim_max] = options.trim_max
-		cW = pywt.wavedec(D, 'haar', axis=0, mode='constant')
-		for cX in range(1, min(len(cW) - 1, red_coef + 1)):
-			cW[-cX] = np.zeros_like(cW[-cX])
-		R = pywt.waverec(cW, 'haar', axis=0, mode='constant')
-		if _odd:
-			R = R[:-1]
-		
-		cna_calls[idxs] = R
+	if options.smooth:
+		cna_calls = np.zeros((cna_size, data_mat.shape[0]))
+		for _chr in chrom_list:
+			chrom_size = gcContent[_chr].End.max()
+			idxs = raw_gc[_chr].binidx.values
+			D = cna_ratio[idxs]
+			_odd = False
+			if D.shape[0] % 2 == 1:
+				D = np.concatenate([D, np.zeros(D.shape[1])[None]], axis=0)
+				_odd = True
+				#pad one 0
+			D[D > options.trim_max] = options.trim_max
+			cW = pywt.wavedec(D, 'haar', axis=0, mode='constant')
+			for cX in range(1, min(len(cW) - 1, red_coef + 1)):
+				cW[-cX] = np.zeros_like(cW[-cX])
+			R = pywt.waverec(cW, 'haar', axis=0, mode='constant')
+			if _odd:
+				R = R[:-1]
+			
+			cna_calls[idxs] = R
+	else:
+		cna_calls = cna_ratio
 
 	idx = ["%s:%d-%d" % (x[0], x[1], x[2]) for x in raw_gc.df.sort_values('binidx').values]
 	cols = adata.obs.index
