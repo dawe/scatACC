@@ -61,7 +61,7 @@ def build_header(in_header, coder, group = '', keep_unmatched=True):
                 'SM': bc,
                 'CN':_cn })    
   if keep_unmatched:
-    _rg.append({'ID': "Background_%s" % group,
+    _rg.append({'ID': "Background-%s" % group,
                 'PL':_pl,
                 'PU':_pu,
                 'LB':_lb,

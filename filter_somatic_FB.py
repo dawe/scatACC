@@ -22,7 +22,7 @@ def _check_lods(record, tum_idx, norm_idx, tumor_thresh=35, normal_thresh=35):
         normal_lod = normal_thresh
     return normal_lod >= normal_thresh and tumor_lod >= tumor_thresh
 
-def _check_freqs(parts, tum_idx, norm_idx, thresh_ratio=2.7):
+def _check_freqs(record, tum_idx, norm_idx, thresh_ratio=2.7):
     """Ensure frequency of tumor to normal passes a reasonable threshold.
     Avoids calling low frequency tumors also present at low frequency in normals,
     which indicates a contamination or persistent error.
@@ -47,7 +47,7 @@ def main():
   prog="filter_somatic_FB.py",
   epilog="For any question, write to cittaro.davide@hsr.it")
   option_parser.add_argument("--version", action="version", version="%(prog)s 0.1")
-  option_parser.add_argument("--vcf", help="Multisample VCF file", action='store', type=argparse.FileType('r'), required=True)
+  option_parser.add_argument("--vcf", help="Multisample VCF file", action='store', type=str, required=True)
 #  option_parser.add_argument("--name", help="name", action='store', default='script')
 
   options = option_parser.parse_args()  
@@ -60,6 +60,7 @@ def main():
 
 #  vcf_out = vcf.VCFWriter(sys.stdout, template=vcf_parser)  
 
+  samples = vcf_parser.samples
   df = []
   index = []
   for record in vcf_parser:
