@@ -31,8 +31,12 @@ def main():
   except:
     clusters = pd.read_pickle(options.clusters)
 
-  merged = clusters.astype(str).agg('_'.join, axis=1)     
-  
+  try:
+    merged = clusters.astype(str).agg('_'.join, axis=1)     
+  except ValueError:
+    #only one type
+    merged = clusters
+
   cell2group = dict(merged)
   groups = set(cell2group.values())
   
@@ -62,7 +66,7 @@ def main():
     bam_out[g].write(r)
 
   bam_in.close()
-  [f.close() for f in bam_out]    
+  [bam_out[f].close() for f in bam_out]    
 
 if __name__ == '__main__':
   main()
