@@ -45,13 +45,15 @@ def build_header(in_header, coder, group = '', keep_unmatched=True):
       header[k] = in_header[k]
   
   # read groups
+  _pl = _pu = _lb = _cn = 'default'
   if 'RG' in in_header:
-    _pl = in_header['RG'][0]['PL']
-    _pu = in_header['RG'][0]['PU']
-    _lb = in_header['RG'][0]['LB']
-    _cn = in_header['RG'][0]['CN']
-  else:
-    _pl = _pu = _lb = _cn = 'default'
+    try:
+      _pl = in_header['RG'][0]['PL']
+      _pu = in_header['RG'][0]['PU']
+      _lb = in_header['RG'][0]['LB']
+      _cn = in_header['RG'][0]['CN']
+    except KeyError:
+      1
   _rg = []
   for bc in coder.values():
     _rg.append({'ID': "%s-%s" % (bc, group),
