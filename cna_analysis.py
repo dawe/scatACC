@@ -12,6 +12,7 @@ def get_options():
 	parser.add_argument('-i', '--input-file', help='AnnData File with binned counts', nargs = '+')
 	parser.add_argument('-g', '--gcContent', help='GC content file (bed file)')
 	parser.add_argument('-p', '--prefix', help='Prefix for output file')
+	parser.add_argument('-x', '--exclude', help='Exclude these regions from the analysis (bed file)')
 	parser.add_argument('-w', '--window-size', help='Window size for CNA analysis', type=int, default=10000000)
 	parser.add_argument('-b', '--bin-size', help='Bin size in original matrix', type=int, default=5000)
 	parser.add_argument('-T', '--trim-max', help='Max copy number callable', type=int, default=6)
