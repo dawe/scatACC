@@ -24,7 +24,7 @@ def main():
   if not options.output:
     prefix, _ = os.path.splitext(os.path.basename(options.bamfile))
   else:
-    prefix = 'output'
+    prefix = options.output
 
   try:
     clusters = pd.read_table(options.clusters, index_col=0, header=None)
