@@ -31,25 +31,20 @@ def reverse_complement(s):
     return ''.join([ra[x] for x in s[::-1]])
 
 
-#@numba.jit(numba.float64(numba.int8[:], numba.float64[:, :], numba.float64[:]))
-#@numba.jit(numba.float64(numba.int32[:], numba.float64[:, :], numba.float64[:]))
-@numba.jit(nopython=True)
+@numba.jit(numba.float64(numba.int8[:], numba.float64[:, :], numba.float64[:]), nopython=True)
+#@numba.jit(nopython=True)
 def n_affinity(seq, tf_mat, bg_pv):
-    p = np.zeros(len(seq))
-    for x in range(len(tf_mat)):
+    p = np.zeros(seq.size)
+    for x in range(seq.size):
         p[x] = tf_mat[x, seq[x]]
-#    l_tf = len(tf_mat)
-#    p = tf_mat[np.arange(l_tf), seq]
     bg = bg_pv[seq]
     return np.sum(p - bg)
 
-#@numba.jit(numba.float64(numba.int32[:, :],numba.int32[:, :],numba.float64[:, :],numba.float64[:], numba.int8), nopython=True)
-@numba.jit(nopython=True)
+@numba.jit(numba.float64(numba.int8[:,:],numba.int8[:,:],numba.float64[:,:],numba.float64[:], numba.boolean), nopython=True)
+#@numba.jit(nopython=True)
 def n_tba(seq_array, rseq_array, tf_mat, bg_pv, log=True):
-#    aff_fwd = np.zeros(len(seq_array))
-#    aff_rev = np.zeros(len(seq_array))
-    tba_arr = np.zeros(len(seq_array))
-    for x in range(len(tba_arr)):
+    tba_arr = np.zeros(seq_array.shape[0])
+    for x in range(tba_arr.size):
         aff_fwd = n_affinity(seq_array[x], tf_mat, bg_pv)
         aff_rev = n_affinity(rseq_array[x], tf_mat, bg_pv)
         tba_arr[x] = np.exp(max(aff_fwd, aff_rev))
@@ -126,8 +121,8 @@ def main():
         l_seq = len(seq)
         for tn, tx in enumerate(tf_names):
             l_tf = len(tf_d[tx])
-            seq_array = np.array([seq_idx[s:s + l_tf] for s in range(l_seq - l_tf)])
-            rseq_array = np.array([rseq_idx[s:s + l_tf] for s in range(l_seq - l_tf)])    
+            seq_array = np.array([seq_idx[s:s + l_tf] for s in range(l_seq - l_tf)], dtype=np.int8)
+            rseq_array = np.array([rseq_idx[s:s + l_tf] for s in range(l_seq - l_tf)], dtype=np.int8)    
             tba[tn] = n_tba(seq_array, rseq_array, tf_d[tx], bg_pv, log=False) 
         tba_seq[seq_name] += tba
 
@@ -137,7 +132,7 @@ def main():
 
     if not options.output:
         fout = options.fasta.replace('.fa', '.pickle')        
-    pd.DataFrame(tba_seq, index=tf_names, columns=['TBA']).to_pickle(fout)
+    pd.DataFrame(tba_seq, index=tf_names).T.to_pickle(fout)
 
 if __name__ == '__main__':
   main()
