@@ -109,7 +109,7 @@ def main():
     seq_fh = pysam.FastxFile(options.fasta)
     for entry in tqdm(seq_fh, unit='sequence'):
         seq = entry.sequence.upper()
-        seq_name = i.name
+        seq_name = entry.name
         if not seq_name in tba_seq:
             # initialize
             tba_seq[seq_name] = np.zeros(n_tf)
