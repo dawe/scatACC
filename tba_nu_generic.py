@@ -19,6 +19,7 @@ def get_options():
     parser.add_argument('-m', '--matrix', help='MEME formatted file with matrices', required=True)
     parser.add_argument('-o', '--output', help='Output file name')
     parser.add_argument('-p', '--pad', help='Pad sequences to this length', default=0)
+    parser.add_argument('-b', '--background', help='Tab separated file with nucleoutide probability')
     
   
     options = parser.parse_args()
@@ -86,11 +87,18 @@ def main():
 
     tf_d = read_matrix(options.matrix)
 
-    bg_p = {'A':2.523e-01,
-            'C':2.477e-01,
-            'G':2.477e-01,
-            'T':2.523e-01,
-           }
+    bg_p = {}
+    if not options.background:
+        bg_p = {'A':2.5e-01,
+                'C':2.5e-01,
+                'G':2.5e-01,
+                'T':2.5e-01,
+               }
+    else:
+        for line in open(options.background):
+            t = line.split()
+            bg_p[t[0]] = float(t[1])
+
     nt_idx = {'A':0, 'C':1, 'G':2, 'T':3}
     for nt in 'ACGT':
         bg_p[nt] = np.log(bg_p[nt])
