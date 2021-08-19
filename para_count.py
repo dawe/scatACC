@@ -41,7 +41,7 @@ def count_intervals(chunk_intvl, bc_list, bam_file, n_regions, quality):
   id2sm = dict([(x['ID'], x['SM']) for x in bam_in.header['RG']])
   for chrom, start, end, nl in chunk_intvl:
 #    sys.stderr.write(f'working on {chrom}:{start}-{end}, {nl} ')
-    if not chrom in bam_in.header.references:
+    if not chrom in bam_in.references:
       continue
     for alignment in bam_in.fetch(chrom, start, end):
       if alignment.is_proper_pair and alignment.mapq >= quality and alignment.is_read1 and not alignment.is_duplicate:
