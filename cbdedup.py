@@ -34,14 +34,14 @@ def main():
   options = get_options()
   
   if options.stdin:
-    bam_in = pysam.Samfile('-', 'rb')
+    bam_in = pysam.AlignmentFile('-', 'rb')
   else:
-    bam_in = pysam.Samfile(options.bamfile, 'rb')
+    bam_in = pysam.AlignmentFile(options.bamfile, 'rb')
 
   if options.stdout:
     options.output = sys.stdout
 
-  bam_out = pysam.Samfile(options.output, 'wb', template=bam_in)
+  bam_out = pysam.AlignmentFile(options.output, 'wb', template=bam_in)
 
   buffer = []
   hash_in_buffer = set()
