@@ -28,9 +28,9 @@ def main():
         tags = record.tags.copy()
         rg = [x[1] for x in tags if x[0]=='RG'][0]
         sm = rg_sm[rg]
-        if not options.background and sm != 'Background':
-    	    tags.append(('CB', sm))
-    	    record.tags = tags
+        if sm != 'Background' or options.background:
+            tags.append(('CB', sm))
+    	record.tags = tags
         bam_out.write(record)
     
     bam_in.close()
