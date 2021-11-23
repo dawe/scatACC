@@ -19,7 +19,7 @@ for record in in_header['RG']:
 
 for record in bam_in:
     tags = record.tags.copy()
-    rg = [[x[1] for x in tags if x[0]=='RG'][0]
+    rg = [x[1] for x in tags if x[0]=='RG'][0]
     tags.append(('CB', rg_sm[rg]))
     record.tags = tags
     bam_out.write(record)
