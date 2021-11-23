@@ -10,7 +10,7 @@ def get_options():
 
 
 def main():
-   options = get_options()
+    options = get_options()
    
     bam_in = pysam.AlignmentFile(options.bam_in, 'rb')
     in_header = bam_in.header
