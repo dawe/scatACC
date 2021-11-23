@@ -3,10 +3,13 @@ import pysam
 import argparse
 
 def get_options():
-  parser = argparse.ArgumentParser(prog='CBfromRG.py')
-  parser.add_argument('-i', '--bam_in', help='Input BAM file', required=True)
-  parser.add_argument('-o', '--bam_out', help='Output BAM file', required=True)
-  parser.add_argument('-b', '--background', help='Include background', action='store_true')
+    parser = argparse.ArgumentParser(prog='CBfromRG.py')
+    parser.add_argument('-i', '--bam_in', help='Input BAM file', required=True)
+    parser.add_argument('-o', '--bam_out', help='Output BAM file', required=True)
+    parser.add_argument('-b', '--background', help='Include background', action='store_true')
+    options = parser.parse_args()
+
+    return options
 
 
 def main():
