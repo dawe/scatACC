@@ -1,30 +1,37 @@
 import sys
 import pysam
+import argparse
 
-if len(sys.argv) < 3:
-    print("You should specify BAM in and BAM out")
-    sys.exit(1)
+def get_options():
+  parser = argparse.ArgumentParser(prog='CBfromRG.py')
+  parser.add_argument('-i', '--bam_in', help='Input BAM file', required=True)
+  parser.add_argument('-o', '--bam_out', help='Output BAM file', required=True)
+  parser.add_argument('-b', '--background', help='Include background', action='store_true')
 
-fin = sys.argv[1]
-fout = sys.argv[2]
 
-bam_in = pysam.AlignmentFile(fin, 'rb')
-in_header = bam_in.header
+def main():
+   options = get_options()
+   
+    bam_in = pysam.AlignmentFile(options.bam_in, 'rb')
+    in_header = bam_in.header
+    
+    bam_out = pysam.AlignmentFile(options.bam_out, 'wb', header=in_header)
+    rg_sm = {}
+    
+    for record in in_header['RG']:
+        rg_sm[record['ID']] = record['SM']
+    
+    for record in bam_in:
+        tags = record.tags.copy()
+        rg = [x[1] for x in tags if x[0]=='RG'][0]
+        sm = rg_sm[rg]
+        if not options.background and sm != 'Background':
+    	    tags.append(('CB', sm))
+    	    record.tags = tags
+        bam_out.write(record)
+    
+    bam_in.close()
+    bam_out.close()    
 
-bam_out = pysam.AlignmentFile(fout, 'wb', header=in_header)
-rg_sm = {}
-
-for record in in_header['RG']:
-    rg_sm[record['ID']] = record['SM']
-
-for record in bam_in:
-    tags = record.tags.copy()
-    rg = [x[1] for x in tags if x[0]=='RG'][0]
-    sm = rg_sm[rg]
-    if sm != 'Background':
-	    tags.append(('CB', rg_sm[rg]))
-	    record.tags = tags
-    bam_out.write(record)
-
-bam_in.close()
-bam_out.close()    
+if __name__ == '__main__':
+  main()
