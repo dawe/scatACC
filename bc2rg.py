@@ -106,8 +106,9 @@ def main():
 
     tags = [x for x in r.tags if x[0] != 'RG']
     tags.append(('RG', rg))
-    # also put barcode into CB tag for compatibility
-    tags.append(('CB', namer[r.qname]))
+    if r.qname in namer:
+        # also put barcode into CB tag for compatibility
+        tags.append(('CB', namer[r.qname]))
     r.tags = tags
     bam_out.write(r)
 
