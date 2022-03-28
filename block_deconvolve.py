@@ -46,6 +46,8 @@ def deconvolve():
     n_bins = chroms[chrom] // stepsize
     v1 = np.array(tn5.stats(chrom, nBins=n_bins))
     v2 = np.array(tnH.stats(chrom, nBins=n_bins))
+    v1[np.isnan(v1)] = 0
+    v2[np.isnan(v2)] = 0
     v1 = v1 / np.linalg.norm(v1) * options.scale
     v2 = v2 / np.linalg.norm(v2) * options.scale
     V = v1 - v2
