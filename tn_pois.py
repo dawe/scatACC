@@ -67,7 +67,7 @@ def diff_estimate():
 			continue
 		chr_len = ftn5.get_reference_length(chromosome)
 		for start in range(0, chr_len, options.stepsize):
-			stop = start + 5000
+			stop = start + options.stepsize
 			if stop > chr_len:
 				stop = chr_len
 			c5 = ftn5.count(contig=chromosome, start=start, stop=stop, read_callback='all')
