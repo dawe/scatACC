@@ -2,6 +2,11 @@ import HTSeq
 import sys
 import argparse
 import editdistance as ed
+import json
+
+_SPACER_MAXDIST = 2
+_BC_MAXDIST = 1
+
 
 bc_A = ['CGTACTAG','TCCTGAGC', 'TCATGAGC', 'CCTGAGAT', 
 'TAAGGCGA', 'GCTACGCT', 'AGGCTCCG', 'CTGCGCAT']
@@ -48,13 +53,14 @@ b'GCTC':'GCTC'
 }
 
 
-
 def get_options():
 	parser = argparse.ArgumentParser(prog='ab_tmx.py')
 	parser.add_argument('-p', '--prefix', help='Prefix for output files', default='out')
 	parser.add_argument('-1', '--read1', help='Fastq file with R1', required=True)
 	parser.add_argument('-2', '--read2', help='Fastq file with R2 (is R3 in scGETseq)', required=True)
-	parser.add_argument('-b', '--barcodes', help='Fastq file with barcodes (is R2 in scGETseq only)')	
+#	parser.add_argument('-d', '--definitions', help='JSON file with barcode definitions', required=True)	
+	parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')	
+	parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', store_action=True)	
 	
 	options = parser.parse_args()
 	
@@ -67,7 +73,7 @@ def demux():
 	suffix = [out_r1, out_r2]
 	if options.barcodes:
 		suffix = [out_r1, out_r2, 'RB']
-
+		
 	filenames = [f'{options.prefix}_{a}_{b}_{r}_{dbc_A[a]}_{dbc_B[b]}.fastq' for a in bc_A for b in bc_B for r in suffix]
 
 	wfh = dict.fromkeys(filenames)
@@ -87,7 +93,7 @@ def demux():
 	for reads in read_iterator:
 		# check MEDSA spacer
 		n_tot += 1
-		if ed.eval(reads[0].seq[8:27], _sp_A) > 1:
+		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST:
 			continue
 		bc1 = [x for x in _bc_A if ed.eval(reads[0].seq[:8], x) <= 1]
 		bc2 = [x for x in _bc_B if ed.eval(reads[1].seq[:4], x) <= 1]
