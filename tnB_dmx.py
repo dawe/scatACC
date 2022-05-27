@@ -96,8 +96,8 @@ def demux():
 	
 		if bc_dist1[amin1] <= _BC_MAXDIST and bc_dist2[amin2] <= _BC_MAXDIST:
 			n_pass += 1
-			bc1 = _dbc_A[_bc_A[0]]
-			bc2 = _dbc_B[_bc_B[0]]
+			bc1 = _dbc_A[_bc_A[amin1]]
+			bc2 = _dbc_B[_bc_B[amin2]]
 			fname1 = f'{options.prefix}_{bc1}_{bc2}_R1_{dbc_A[bc1]}_{dbc_B[bc2]}.fastq'
 			fname2 = f'{options.prefix}_{bc1}_{bc2}_R2_{dbc_A[bc1]}_{dbc_B[bc2]}.fastq'
 			# found
