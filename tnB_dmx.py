@@ -79,7 +79,7 @@ def demux():
 	for reads in read_iterator:
 		# check MEDSA  and MEDSB spacer
 		n_tot += 1
-		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST and ed.eval(reads[1].seq[8:27], _sp_A) > _SPACER_MAXDIST:
+		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST or ed.eval(reads[1].seq[8:27], _sp_A) > _SPACER_MAXDIST:
 			if options.write_unmatched:
 				fname1 = f'{options.prefix}_un_R1.fastq'
 				fname2 = f'{options.prefix}_un_R2.fastq'
@@ -96,8 +96,8 @@ def demux():
 	
 		if bc_dist1[amin1] <= _BC_MAXDIST and bc_dist2[amin2] <= _BC_MAXDIST:
 			n_pass += 1
-			bc1 = _dbc_A[bc1[0]]
-			bc2 = _dbc_B[bc2[0]]
+			bc1 = _dbc_A[_bc_A[0]]
+			bc2 = _dbc_B[_bc_B[0]]
 			fname1 = f'{options.prefix}_{bc1}_{bc2}_R1_{dbc_A[bc1]}_{dbc_B[bc2]}.fastq'
 			fname2 = f'{options.prefix}_{bc1}_{bc2}_R2_{dbc_A[bc1]}_{dbc_B[bc2]}.fastq'
 			# found
