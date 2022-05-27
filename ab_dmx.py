@@ -10,12 +10,10 @@ _BC_MAXDIST = 1
 
 bc_A = ['CGTACTAG','TCCTGAGC', 'TCATGAGC', 'CCTGAGAT', 
 'TAAGGCGA', 'GCTACGCT', 'AGGCTCCG', 'CTGCGCAT']
-bc_B = ['AACC', 'GCTC']
+bc_B = ['AACCAACC', 'GCTCGCTC']
 
-_bc_A = [b'CGTACTAG',b'TCCTGAGC', b'TCATGAGC', b'CCTGAGAT', 
-b'TAAGGCGA', b'GCTACGCT', b'AGGCTCCG', b'CTGCGCAT']
-_bc_B = [b'AACC', b'GCTC']
-
+_bc_A = [x.encode() for x in bc_A]
+_bc_B = [x.encode() for x in bc_B]
 
 _sp_A = b'AGATGTGTATAAGAGACAG'
 
@@ -30,27 +28,13 @@ dbc_A = {
 'CTGCGCAT':'tnH'
 }
 
-_dbc_A = {
-b'CGTACTAG':'CGTACTAG',
-b'TCCTGAGC':'TCCTGAGC',
-b'TCATGAGC':'TCATGAGC',
-b'CCTGAGAT':'CCTGAGAT',
-b'TAAGGCGA':'TAAGGCGA',
-b'GCTACGCT':'GCTACGCT',
-b'AGGCTCCG':'AGGCTCCG',
-b'CTGCGCAT':'CTGCGCAT'
-}
-
-
 dbc_B = {
-'AACC':'tn5',
-'GCTC':'tnH'
+'AACCAACC':'tn5',
+'GCTCGCTC':'tnH'
 }
 
-_dbc_B = {
-b'AACC':'AACC',
-b'GCTC':'GCTC'
-}
+_dbc_A = dict(zip(_bc_A, bc_A))
+_dbc_B = dict(zip(_bc_B, bc_B))
 
 
 def get_options():
@@ -93,12 +77,14 @@ def demux():
 	for reads in read_iterator:
 		# check MEDSA spacer
 		n_tot += 1
-		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST:
+		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST and ed.eval(reads[1].seq[8:27], _sp_A) > _SPACER_MAXDIST:
 			continue
-		bc1 = [x for x in _bc_A if ed.eval(reads[0].seq[:8], x) <= 1]
-		bc2 = [x for x in _bc_B if ed.eval(reads[1].seq[:4], x) <= 1]
-		
-		if len(bc1) == 1 and len(bc2) == 1:
+		bc_dist1 = [ed.eval(reads[0].seq[:8], x)for x in _bc_A]
+		amin1 = [x for x in range(len(bc_dist1)) if bc_dist1[x] == min(bc_dist1)][0]
+		bc_dist2 = [ed.eval(reads[1].seq[:8], x)for x in _bc_B]
+		amin2 = [x for x in range(len(bc_dist2)) if bc_dist2[x] == min(bc_dist2)][0]
+	
+		if bc_dist1[amin1] <= _BC_MAXDIST and bc_dist2[amin2] <= _BC_MAXDIST:
 			n_pass += 1
 			bc1 = _dbc_A[bc1[0]]
 			bc2 = _dbc_B[bc2[0]]

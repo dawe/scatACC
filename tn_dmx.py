@@ -10,12 +10,13 @@ _BC_MAXDIST = 1
 bc_A = ['CGTACTAG','TCCTGAGC', 'TCATGAGC', 'CCTGAGAT', 
 'TAAGGCGA', 'GCTACGCT', 'AGGCTCCG', 'CTGCGCAT']
 
-_bc_A = [b'CGTACTAG',b'TCCTGAGC', b'TCATGAGC', b'CCTGAGAT', 
-b'TAAGGCGA', b'GCTACGCT', b'AGGCTCCG', b'CTGCGCAT']
+# binary version to make things quicker
+_bc_A = [x.encode() for x in bc_A]
 
-
+#MEDS spacer
 _sp_A = b'AGATGTGTATAAGAGACAG'
 
+# tn association
 dbc_A = {
 'CGTACTAG':'tn5',
 'TCCTGAGC':'tn5',
@@ -27,23 +28,15 @@ dbc_A = {
 'CTGCGCAT':'tnH'
 }
 
-_dbc_A = {
-b'CGTACTAG':'CGTACTAG',
-b'TCCTGAGC':'TCCTGAGC',
-b'TCATGAGC':'TCATGAGC',
-b'CCTGAGAT':'CCTGAGAT',
-b'TAAGGCGA':'TAAGGCGA',
-b'GCTACGCT':'GCTACGCT',
-b'AGGCTCCG':'AGGCTCCG',
-b'CTGCGCAT':'CTGCGCAT'
-}
+# binary decoder to be quicker
+_dbc_A = dict(zip(_bc_A, bc_A))
 
 def get_options():
 	parser = argparse.ArgumentParser(prog='ab_tmx.py')
 	parser.add_argument('-p', '--prefix', help='Prefix for output files', default='out')
 	parser.add_argument('-1', '--read1', help='Fastq file with R1', required=True)
 	parser.add_argument('-2', '--read2', help='Fastq file with R2 (is R3 in scGETseq)', required=True)
-	parser.add_argument('-b', '--barcodes', help='Fastq file with barcodes (is R2 in scGETseq only)')	
+	parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')	
 	parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', store_action=True)	
 	
 	options = parser.parse_args()
@@ -90,7 +83,7 @@ def demux():
 					reads[2].write_to_fastq_file(wfh[fnameb])
 			continue	
 		bc_dist = [ed.eval(reads[0].seq[:8], x)for x in _bc_A]
-		amin = [x for x in range(len(bc_dist)) if bc_dist[x] == min(bc1)][0]
+		amin = [x for x in range(len(bc_dist)) if bc_dist[x] == min(bc_dist)][0]
 		
 		if bc_dist[amin] <= _BC_MAXDIST:
 			n_pass += 1
