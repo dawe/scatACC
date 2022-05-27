@@ -38,6 +38,7 @@ def get_options():
 	parser.add_argument('-2', '--read2', help='Fastq file with R2 (is R3 in scGETseq)', required=True)
 	parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')	
 	parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', action='store_true')	
+	parser.add_argument('-T', '--tagdust', help='tagdust compatible naming (for retrocompatibility with older getseq pipeline)', action='store_true')
 	
 	options = parser.parse_args()
 	
@@ -52,10 +53,17 @@ def demux():
 		suffix = [out_r1, out_r2, 'RB']
 
 	filenames = [f'{options.prefix}_{a}_{r}_{dbc_A[a]}.fastq' for a in bc_A for r in suffix]
+	un_filenames = []
 	if options.write_unmatched:
-		filenames = filenames + [f'{options.prefix}_un_{r}.fastq' for r in suffix]
+		un_filenames =  [f'{options.prefix}_un_{r}.fastq' for r in suffix]
+		
+	if options.tagdust:
+		suffix = ['READ1', 'READ3', 'READ2']
+		filenames = [f'{options.prefix}_BC_{a}_{r}.fq' for a in bc_A for r in suffix]		
+		un_filenames = [f'{options.prefix}_un_{r}.fq' for r in suffix]
+		options.write_unmatched = True
 
-	wfh = dict.fromkeys(filenames)
+	wfh = dict.fromkeys(filenames + un_filenames)
 	for f in wfh:
 		wfh[f] = open(f, 'w')
 	
@@ -74,13 +82,10 @@ def demux():
 		n_tot += 1
 		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST:
 			if options.write_unmatched:
-				fname1 = f'{options.prefix}_un_R1.fastq'
-				fname2 = f'{options.prefix}_un_R2.fastq'
-				reads[0].write_to_fastq_file(wfh[fname1])
-				reads[1].write_to_fastq_file(wfh[fname2])
+				reads[0].write_to_fastq_file(wfh[un_filenames[0]])
+				reads[1].write_to_fastq_file(wfh[un_filenames[1]])
 				if options.barcodes:
-					fnameb = f'{options.prefix}_un_RB.fastq'
-					reads[2].write_to_fastq_file(wfh[fnameb])
+					reads[2].write_to_fastq_file(wfh[un_filenames[2]])
 			continue	
 		bc_dist = [ed.eval(reads[0].seq[:8], x)for x in _bc_A]
 		amin = [x for x in range(len(bc_dist)) if bc_dist[x] == min(bc_dist)][0]
@@ -98,13 +103,10 @@ def demux():
 				reads[2].write_to_fastq_file(wfh[fnameb])
 
 		elif options.write_unmatched:		
-			fname1 = f'{options.prefix}_un_R1.fastq'
-			fname2 = f'{options.prefix}_un_R2.fastq'
-			reads[0].write_to_fastq_file(wfh[fname1])
-			reads[1].write_to_fastq_file(wfh[fname2])
+			reads[0].write_to_fastq_file(wfh[un_filenames[0]])
+			reads[1].write_to_fastq_file(wfh[un_filenames[1]])
 			if options.barcodes:
-				fnameb = f'{options.prefix}_un_RB.fastq'
-				reads[2].write_to_fastq_file(wfh[fnameb])
+				reads[2].write_to_fastq_file(wfh[un_filenames[2]])
 
 	for f in wfh:
 		wfh[f].close()
