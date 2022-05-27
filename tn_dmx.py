@@ -93,13 +93,20 @@ def demux():
 		if bc_dist[amin] <= _BC_MAXDIST:
 			n_pass += 1
 			bc1 = _dbc_A[_bc_A[amin]]
-			fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq'
-			fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastq'
+			if options.tagdust:
+				fname1 = f'{options.prefix}_BC_{bc1}_READ1.fq'
+				fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq'
+			else:
+				fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq'
+				fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastq'
 			# found
 			reads[0][27:].write_to_fastq_file(wfh[fname1])
 			reads[1][4:].write_to_fastq_file(wfh[fname2])
 			if options.barcodes:
-				fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq'
+				if options.tagdust:
+					fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq'
+				else:
+					fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq'
 				reads[2].write_to_fastq_file(wfh[fnameb])
 
 		elif options.write_unmatched:		
