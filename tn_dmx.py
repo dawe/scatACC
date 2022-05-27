@@ -37,7 +37,7 @@ def get_options():
 	parser.add_argument('-1', '--read1', help='Fastq file with R1', required=True)
 	parser.add_argument('-2', '--read2', help='Fastq file with R2 (is R3 in scGETseq)', required=True)
 	parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')	
-	parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', store_action=True)	
+	parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', action='store_true')	
 	
 	options = parser.parse_args()
 	
