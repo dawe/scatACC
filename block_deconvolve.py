@@ -12,6 +12,7 @@ def get_options():
   parser.add_argument('-H', '--tnH', help='BigWig file with tnH signal')
   parser.add_argument('-D', '--write-diff', help='Write difference file', action='store_true')
   parser.add_argument('-S', '--scale', help='Scaling factor after normalization', default=1e4, type=float)
+  parser.add_argument('-A', '--asinh', help='Apply asinh transformation to diff file', action='store_true')
   
   
   options = parser.parse_args()
@@ -53,6 +54,8 @@ def deconvolve():
     V = v1 - v2
     V[np.isnan(V)] = 0
     if options.write_diff:
+      if options.asinh:
+        V = np.arcsinh(V)
       rat_diff.addEntries(chrom, 1, values=V, span=stepsize, step=stepsize)
     Vd=np.zeros_like(V)
     Vd[V > 0] = V[V > 0]
