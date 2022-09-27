@@ -3,6 +3,7 @@ import numpy as np
 import sys
 import argparse
 import os
+import pywt
 
 def get_options():
   parser = argparse.ArgumentParser(prog='bc2rg.py')
@@ -13,11 +14,22 @@ def get_options():
   parser.add_argument('-D', '--write-diff', help='Write difference file', action='store_true')
   parser.add_argument('-S', '--scale', help='Scaling factor after normalization', default=1e4, type=float)
   parser.add_argument('-A', '--asinh', help='Apply asinh transformation to diff file', action='store_true')
-  
+  parser.add_argument('-M', '--smooth', help='Apply wavelet smoothing up to this level', default=0)  
   
   options = parser.parse_args()
   
   return options
+
+def wavelet_smooth(data, level, wavelet='sym7'):
+  coefs = pywt.wavedec(data, wavelet)
+  if l >= len(coefs):
+    l = len(coefs) - 1
+  if l == 0:
+    return data
+  for l in range(level):
+    nl = l + 1
+    coefs[-nl] = np.zeros_like(coefs[-nl])
+  return pywt.waverec(coefs, wavelet)  
 
 def deconvolve():
   options = get_options()
@@ -49,6 +61,8 @@ def deconvolve():
     v2 = np.array(tnH.stats(chrom, nBins=n_bins))
     v1[np.isnan(v1)] = 0
     v2[np.isnan(v2)] = 0
+    v1 = wavelet_smooth(v1, options.smooth)
+    v2 = wavelet_smooth(v2, options.smooth)
     v1 = v1 / np.linalg.norm(v1) * options.scale
     v2 = v2 / np.linalg.norm(v2) * options.scale
     V = v1 - v2
