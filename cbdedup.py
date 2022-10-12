@@ -73,7 +73,7 @@ def main():
 
   dup_count = Counter(hash_counter.values())
   with open(stat_file, 'w') as fout:
-    fout.write('clone_size\tnum_reads\n')
+    fout.write('clone_size\tn_reads\n')
     for k in natsorted(dup_count.keys()):
       fout.write(f"{k}\t{dup_count[k]}\n")
 
