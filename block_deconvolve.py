@@ -6,7 +6,7 @@ import os
 import pywt
 
 def get_options():
-  parser = argparse.ArgumentParser(prog='bc2rg.py')
+  parser = argparse.ArgumentParser(prog='block_deconvolve.py')
   parser.add_argument('-p', '--prefix', help='Prefix for all files', default='out')
   parser.add_argument('-s', '--stepsize', help='Bin size for output', default=1000, type=int)
   parser.add_argument('-5', '--tn5', help='BigWig file with tn5 signal')
@@ -22,9 +22,10 @@ def get_options():
 
 def wavelet_smooth(data, level, wavelet='sym7'):
   coefs = pywt.wavedec(data, wavelet)
-  if l >= len(coefs):
-    l = len(coefs) - 1
-  if l == 0:
+  level = int(level)
+  if level >= len(coefs):
+    level = len(coefs) - 1
+  if level == 0:
     return data
   for l in range(level):
     nl = l + 1
