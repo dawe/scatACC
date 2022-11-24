@@ -46,6 +46,7 @@ def regions_from_bins(genome_size, bin_size=5000):
             continue
         t = line.split()
         chrom, chrom_size = t[:2]
+        chrom_size = int(chrom_size)
         if not chrom in regions:
             regions[chrom] = Intersecter()
         for start in np.arange(0, chrom_size, bin_size):
