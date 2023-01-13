@@ -1,4 +1,5 @@
 import sys
+import os
 import scipy.optimize
 import decoratio
 import numpy as np
@@ -6,7 +7,7 @@ import numpy as np
 bedfile = sys.argv[1]
 outfile = sys.argv[2]
 
-prefix = bedfile.replace('.bed', '')
+prefix = os.path.basename(bedfile).replace('.bed', '')
 
 print(f"Sample:\t{prefix}")
 

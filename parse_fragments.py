@@ -84,6 +84,8 @@ def parse_fragments():
     M = sp.lil_matrix((len(whitelist), len(var_names)))
     for line in tqdm(open(options.input)):
         chrom, start, end, cell_bc, dup_count = line.split()
+        if not cell_bc in whitelist:
+            continue
         if not chrom in regions:
             continue
         count = 1
