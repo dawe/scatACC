@@ -18,9 +18,9 @@ df = pd.read_table(sys.argv[1], header=None)
 samples = [x.strip() for x in open(sys.argv[2])]
 df.columns=['chrom', 'start', 'end', 'state'] + samples
 p = df.groupby('state')[samples].agg('sum')
-states = ['1_TssA', '2_TssAFlnk', '3_TxFlnk', '4_Tx', '5_TxWk', '6_EnhG', '7_Enh', '8_ZNF/Rpts', '9_Het', '10_TssBiv', '11_BivFlnk', '12_EnhBiv', '13_ReprPC', '14_ReprPCWk', '15_Quies']
+#states = ['1_TssA', '2_TssAFlnk', '3_TxFlnk', '4_Tx', '5_TxWk', '6_EnhG', '7_Enh', '8_ZNF/Rpts', '9_Het', '10_TssBiv', '11_BivFlnk', '12_EnhBiv', '13_ReprPC', '14_ReprPCWk', '15_Quies']
 
-p.index=states
+#p.index=states
 p = p / p.sum()
 
 df = p.iloc[:, 1::2] / p.iloc[:, ::2].values
