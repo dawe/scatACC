@@ -61,8 +61,8 @@ def main():
         if options.read_umi:
             umi_s = umi_r.seq.decode('ascii')
             umi_q = umi_r.qualstr.decode('ascii')
-            comb_bc = comb_bc + umi_s
-            comb_ql = comb_ql + umi_q
+            comb_bc = comb_bc + umi_s[:10]
+            comb_ql = comb_ql + umi_q[:10]
         
         sys.stdout.write(f'@{bc_s.name}\n{comb_bc}\n+\n{comb_ql}\n')
             
