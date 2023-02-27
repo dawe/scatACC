@@ -33,7 +33,7 @@ samples = [f'{s}_{t}' for s in samples_sum for t in ['tn5', 'tnH']]
 df2 = pd.DataFrame(0, index=df.index, columns=samples_sum)
 
 for s in samples_sum:
-    sdf = df.filter(like=s)
+    sdf = df.filter(like=f'{s}_BC_')
     for t in ['tn5', 'tnH']:
         tn_mask = np.where([len(set(x.split('_')).intersection(tn_barcodes[t])) > 0 for x in sdf.columns])[0]
         df2[f'{s}_{t}'] = sdf.iloc[:, tn_mask].sum(1)
