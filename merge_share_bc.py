@@ -20,6 +20,7 @@ def get_options():
   parser.add_argument('-u', '--read_umi', help='Read containing UMI (R3, RNA only)')
   parser.add_argument('-e', '--max_err', help='Max edit distance (comma separated)', nargs=3, default=[1, 1, 1])
   parser.add_argument('-d', '--debug', help='Print debug information', action='store_true')
+  parser.add_argument('-k', '--crop', help='just crop out expected barcodes', action='store_true')
 #  parser.add_argument('-o', '--output', help='Prefix for outputfile (in pickle format)')
 #  parser.add_argument('-E', '--threshold', help='General threshold for edit distance', default=1, type=int)
   
@@ -35,6 +36,7 @@ def main():
     sp1 = 'TCGGACGATCATGGG' # [0:15]
     sp2 = 'CAAGTATGCAGCGCGCTCAAGCACGTGGAT' # [23:53]
 #    sp3 = 'AGTCGTACGCCGATGCGAAACATCGGCCAC' # [61:91]
+#            AGTCGTACGCCGATGCGAAACATCGGCCAC
     sp3 = 'AGTCGTACGCCGATGCAAAACATAAACCAC' # [61:91]
 
     bc_fh = iter(HTSeq.FastqReader(options.read_bc))
@@ -57,12 +59,16 @@ def main():
         e3 = ed.eval(bc_s[61:91], sp3)
         if options.debug:
             sys.stderr.write(f'{e1}\t{e2}\t{e3}\n')
-        if e1 > thr[0] and e2 > thr[1] and e3 > thr[2]:
-            continue
-        comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
-        comb_ql = bc_q[15:23] + bc_q[53:61] + bc_q[91:99]
-        if 'N' in comb_bc:
-            continue
+        if not options.crop:
+            if e1 > thr[0] and e2 > thr[1] and e3 > thr[2]:
+                continue
+            comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
+            comb_ql = bc_q[15:23] + bc_q[53:61] + bc_q[91:99]
+            if 'N' in comb_bc:
+                continue
+        else:
+            comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
+            comb_ql = bc_q[15:23] + bc_q[53:61] + bc_q[91:99]
         
         if options.read_umi:
             umi_s = umi_r.seq.decode('ascii')
