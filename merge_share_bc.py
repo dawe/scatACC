@@ -30,7 +30,7 @@ def get_options():
 def main():
     options = get_options()
     
-    thrs = [int(x) for x in options.max_err]
+    thr = [int(x) for x in options.max_err]
     
     sp1 = 'TCGGACGATCATGGG' # [0:15]
     sp2 = 'CAAGTATGCAGCGCGCTCAAGCACGTGGAT' # [23:53]
