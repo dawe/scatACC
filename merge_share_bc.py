@@ -19,6 +19,7 @@ def get_options():
   parser.add_argument('-b', '--read_bc', help='Read containing cell barcode (R2)')
   parser.add_argument('-u', '--read_umi', help='Read containing UMI (R3, RNA only)')
   parser.add_argument('-e', '--max_err', help='Max edit distance', default=3, type=int)
+  parser.add_argument('-d', '--debug', help='Print debug information', action='store_true')
 #  parser.add_argument('-o', '--output', help='Prefix for outputfile (in pickle format)')
 #  parser.add_argument('-E', '--threshold', help='General threshold for edit distance', default=1, type=int)
   
@@ -52,6 +53,8 @@ def main():
         e1 = ed.eval(bc_s[:15], sp1)
         e2 = ed.eval(bc_s[23:53], sp2)
         e3 = ed.eval(bc_s[61:91], sp3)
+        if options.debug:
+            sys.stderr.write(f'{e1}\t{e2}\t{e3}\n')
         if e1 + e2 + e3 > options.max_err:
             continue
         comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
