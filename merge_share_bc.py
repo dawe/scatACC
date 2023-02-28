@@ -31,7 +31,8 @@ def main():
     
     sp1 = 'TCGGACGATCATGGG' # [0:15]
     sp2 = 'CAAGTATGCAGCGCGCTCAAGCACGTGGAT' # [23:53]
-    sp3 = 'AGTCGTACGCCGATGCGAAACATCGGCCAC' # [61:91]
+#    sp3 = 'AGTCGTACGCCGATGCGAAACATCGGCCAC' # [61:91]
+    sp3 = 'AGTCGTACGCCGATGCAAAACATAAACCAC' # [61:91]
 
     bc_fh = iter(HTSeq.FastqReader(options.read_bc))
     if options.read_umi:
@@ -40,7 +41,7 @@ def main():
     else:
         _iter = bc_fh
 
-    for _r in tqdm(_iter):
+    for _r in _iter:
         if options.read_umi:
             bc_r, umi_r = _r
         else:
@@ -64,7 +65,7 @@ def main():
             comb_bc = comb_bc + umi_s[:10]
             comb_ql = comb_ql + umi_q[:10]
         
-        sys.stdout.write(f'@{bc_s.name}\n{comb_bc}\n+\n{comb_ql}\n')
+        sys.stdout.write(f'@{bc_r.name}\n{comb_bc}\n+\n{comb_ql}\n')
             
 
 
