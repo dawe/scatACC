@@ -20,23 +20,32 @@ GCTACGCT
 AGGCTCCG
 CTGCGCAT""".split()}
 
+all_barcodes = []
+for t in tn_barcodes:
+    all_barcodes = all_barcodes + tn_barcodes[t]
+
 df = pd.read_table(sys.argv[1], header=None)
 
 #samples = df.columns[4:]
 samples = [x.strip() for x in open(sys.argv[2])]
 df.columns=['chrom', 'start', 'end', 'state'] + samples
 p = df.groupby('state')[samples].agg('sum')
-samples_sum = list(set([x.split('/')[1] for x in samples]))
-samples_sum.sort()
+samples_sum = set()
+for s in samples:
+    for b in all_barcodes:
+        idx = s.find(b)
+        if idx >= 0:
+            samples_sum.add(s[:idx])
+            
+samples_sum = sorted(samples_sum)
 samples = [f'{s}_{t}' for s in samples_sum for t in ['tn5', 'tnH']]
 
-df2 = pd.DataFrame(0, index=df.index, columns=samples_sum)
+df2 = pd.DataFrame(0, index=df.index, columns=samples)
 
 for s in samples_sum:
-    sdf = df.filter(like=f'{s}_BC_')
+    sdf = df.filter(like=f'{s}')
     for t in ['tn5', 'tnH']:
-        tn_mask = np.where([len(set(x.split('_')).intersection(tn_barcodes[t])) > 0 for x in sdf.columns])[0]
-        df2[f'{s}_{t}'] = sdf.iloc[:, tn_mask].sum(1)
+        df2[f'{s}_{t}'] = pd.concat([sdf.filter(like=y) for y in tn_barcodes[t]], axis=1).sum(1)
 
 df2['state'] = df['state']
 p = df2.groupby('state')[samples].agg('sum')
@@ -48,6 +57,7 @@ p = df2.groupby('state')[samples].agg('sum')
 p = p / p.sum()
 
 df = p.iloc[:, 1::2] / p.iloc[:, ::2].values
+df.columns = samples_sum
 desc = df.T.describe().T
 desc.to_csv("State_Enrichment_Stats.txt", sep="\t")
 df.to_csv("State_Enrichment.txt", sep="\t")
