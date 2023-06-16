@@ -49,6 +49,7 @@ def get_options():
 
 def main():
     nl = b'\n'
+    dnl = b'\n+\n'
     dark = b'GGGGGGGGGGGGGGGGGGGG'
     _chunk_size = 2048 # number 
 
@@ -91,6 +92,11 @@ def main():
         fh_out3 = bgzip.BGZipWriter(raw_out3)
     # remember to write bytes, not strings
 
+    r1_spool = b''
+    r2_spool = b''
+    r3_spool = b''
+    _spool_counter = 0
+    
     for item in read_iterator:
         seq1 = item[0].seq
         seq2 = item[1].seq
@@ -128,6 +134,44 @@ def main():
         seq2_out = bc1 + bc2 + bc3
         q_seq2_out = q_bc1 + q_bc2 + q_bc3
         
+        if options.rna:
+            seq2_out = seq2_out + seq3[:options.stitch_length]
+            q_seq2_out = q_seq2_out + qual3[:options.stitch_length]
+            
+        r1_spool = r1_spool + name1 + nl + seq1 + dnl + qual1 + nl
+        r2_spool = r2_spool + name2 + nl + seq2_out + dnl + q_seq2_out + nl
+        
+        if not options.rna:
+            r3_spool = r3_spool + name3 + nl + seq3 + dnl + qual3 + nl
+        
+        _spool_couter += 1
+        
+        if _spool_counter == _chunk_size:
+            fh_out1.write(r1_spool)
+            fh_out2.write(r2_spool)
+            if not options.rna:
+                fh_out3.write(r3_spool)
+            r1_spool = b''
+            r2_spool = b''
+            r3_spool = b''
+            _spool_counter = 0
+    
+    # end, write remaining spool and close files
+    if len(r1_spool) > 0:
+        fh_out1.write(r1_spool)
+        fh_out2.write(r2_spool)
+        if not options.rna:
+            fh_out3.write(r3_spool)
+            
+    fh_out1.close()
+    fh_out2.close()
+    if not options.rna:
+        fh_out3.close()
+
+
+            
+        
+            
 
 
 if __name__ == '__main__':
