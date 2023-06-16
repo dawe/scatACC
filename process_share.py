@@ -51,7 +51,7 @@ def main():
     nl = b'\n'
     dnl = b'\n+\n'
     dark = b'GGGGGGGGGGGGGGGGGGGG'
-    _chunk_size = 2048 # number 
+    _chunk_size = 65536 # number 
 
     options = get_options()
     
@@ -155,8 +155,11 @@ def main():
         if _spool_counter == _chunk_size:
             fh_out1.write(r1_spool)
             fh_out2.write(r2_spool)
+            fh_out1.flush()
+            fh_out2.flush()
             if not options.rna:
                 fh_out3.write(r3_spool)
+                fh_out3.flush()
             r1_spool = b''
             r2_spool = b''
             r3_spool = b''
