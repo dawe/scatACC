@@ -16,22 +16,26 @@ import HTSeq
 
 
 def get_options():
-  parser = argparse.ArgumentParser(prog='process_share.py')
-  parser.add_argument('-1', '--read1', help='Read 1 (R1)')
-  parser.add_argument('-2', '--read2', help='Read 2, containing cell barcode (R2)')
-  parser.add_argument('-3', '--read3', help='Read 3, containing either UMI or second ATAC pair (R3)')
-  parser.add_argument('-R', '--rna', help='Process as scRNA-seq, stitching R3 and R2', action='store_true')
-  parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
-  parser.add_argument('-F', '--filter_failed', help='Filter failed reads (having GGGGG stretches)', action='store_true')
-  parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	')
-  parser.add_argument('-p', '--prefix', help='Prefix for output files')
-  parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
+    parser = argparse.ArgumentParser(prog='process_share.py')
+    parser.add_argument('-1', '--read1', help='Read 1 (R1)')
+    parser.add_argument('-2', '--read2', help='Read 2, containing cell barcode (R2)')
+    parser.add_argument('-3', '--read3', help='Read 3, containing either UMI or second ATAC pair (R3)')
+    parser.add_argument('-R', '--rna', help='Process as scRNA-seq, stitching R3 and R2', action='store_true')
+    parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
+    parser.add_argument('-F', '--filter_failed', help='Filter failed reads (having GGGGG stretches)', action='store_true')
+    parser.add_argument('-p', '--prefix', help='Prefix for output files')
+    parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	')
+    parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
   
-  options = parser.parse_args()
+    options = parser.parse_args()
   
-  return options
+    return options
 
 def main():
+    nl = b'\n'
+    dark = b'GGGGGGGGGGGGGGGGGGGG'
+    _chunk_size = 2048 # number 
+
     options = get_options()
     
     sp1 = 'TCGGACGATCATGGG' # [0:15]
@@ -61,7 +65,30 @@ def main():
         fh_out3 = bgzip.BGZipWriter(raw_out3)
     # remember to write bytes, not strings
 
-    
+    for item in read_iterator:
+        seq1 = item[0].seq
+        seq2 = item[1].seq
+        seq3 = item[2].seq
+
+        qual1 = item[0].qualstr
+        qual2 = item[1].qualstr
+        qual3 = item[2].qualstr
+
+        name1 = item[0].name
+        name2 = item[1].name
+        name3 = item[2].name
+        
+        is_dark = False
+        if seq3[:20] == dark:
+            is_dark = True
+        
+        if options.filter_failed and is_dark:
+            continue
+            
+        
+        
+        
+        
     
     if options.read_umi:
         umi_fh = iter(HTSeq.FastqReader(options.read_umi))
