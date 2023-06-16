@@ -14,6 +14,22 @@ import HTSeq
 # struct UMI
 # AGATGTGTATAAGAGACAG | NNNNNNNNNN
 
+def hamming(a, b):
+    la = len(a)
+    lb = len(b)
+    if la != lb:
+        return la
+    return sum([a[x] != b[x] for x in range(len(a))])
+
+def correct_bc(bc, bc_list, distance=1):
+    distances = np.array([hamming(bc, sh_bc) for sh_bc in bc_list])
+    accepted = np.where(distances <= distance)[0]
+    if len(accepted) >0:
+        # return the first one
+        return bc_list[accepted[0]]
+    else:
+        return -1
+ 
 
 def get_options():
     parser = argparse.ArgumentParser(prog='process_share.py')
@@ -24,7 +40,7 @@ def get_options():
     parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
     parser.add_argument('-F', '--filter_failed', help='Filter failed reads (having GGGGG stretches)', action='store_true')
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
-    parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	')
+    parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
     parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
   
     options = parser.parse_args()
@@ -37,6 +53,16 @@ def main():
     _chunk_size = 2048 # number 
 
     options = get_options()
+    
+    bc_fix = False
+    if options.bc_correct_file:
+        bc_fix = True
+        bc_list = []
+        for line in open(options.bc_correct_file):
+            t = line.split()
+            bc_list.append(bytes(t[1], encoding='ascii'))
+        bc_list = np.array(bc_list)
+    
     
     sp1 = 'TCGGACGATCATGGG' # [0:15]
     sp2 = 'CAAGTATGCAGCGCGCTCAAGCACGTGGAT' # [23:53]
@@ -74,9 +100,6 @@ def main():
         qual2 = item[1].qualstr
         qual3 = item[2].qualstr
 
-        name1 = item[0].name
-        name2 = item[1].name
-        name3 = item[2].name
         
         is_dark = False
         if seq3[:20] == dark:
@@ -84,50 +107,27 @@ def main():
         
         if options.filter_failed and is_dark:
             continue
-            
-        
-        
-        
-        
-    
-    if options.read_umi:
-        umi_fh = iter(HTSeq.FastqReader(options.read_umi))
-        _iter = zip(bc_fh, umi_fh)
-    else:
-        _iter = bc_fh
 
-    for _r in _iter:
-        if options.read_umi:
-            bc_r, umi_r = _r
-        else:
-            bc_r = _r
-    
-        bc_s = bc_r.seq.decode('ascii')
-        bc_q = bc_r.qualstr.decode('ascii')
-        e1 = ed.eval(bc_s[:15], sp1)
-        e2 = ed.eval(bc_s[23:53], sp2)
-        e3 = ed.eval(bc_s[61:91], sp3)
-        if options.debug:
-            sys.stderr.write(f'{e1}\t{e2}\t{e3}\n')
-        if not options.crop:
-            if e1 > thr[0] and e2 > thr[1] and e3 > thr[2]:
-                continue
-            comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
-            comb_ql = bc_q[15:23] + bc_q[53:61] + bc_q[91:99]
-            if 'N' in comb_bc:
-                continue
-        else:
-            comb_bc = bc_s[15:23] + bc_s[53:61] + bc_s[91:99]
-            comb_ql = bc_q[15:23] + bc_q[53:61] + bc_q[91:99]
-        
-        if options.read_umi:
-            umi_s = umi_r.seq.decode('ascii')
-            umi_q = umi_r.qualstr.decode('ascii')
-            comb_bc = comb_bc + umi_s[:10]
-            comb_ql = comb_ql + umi_q[:10]
-        
-        sys.stdout.write(f'@{bc_r.name}\n{comb_bc}\n+\n{comb_ql}\n')
+        name1 = bytes('@' + item[0].name, encoding='ascii')
+        name2 = bytes('@' + item[1].name, encoding='ascii')
+        name3 = bytes('@' + item[2].name, encoding='ascii')
             
+        bc1 = seq2[15:23]
+        bc2 = seq2[53:61]
+        bc3 = seq2[91:99]
+        
+        q_bc1 = qual2[15:23]
+        q_bc2 = qual2[53:61]
+        q_bc3 = qual2[91:99]
+        
+        if bc_fix:
+            bc1 = correct_bc(bc1, bc_list, options.threshold)
+            bc2 = correct_bc(bc2, bc_list, options.threshold)
+            bc3 = correct_bc(bc3, bc_list, options.threshold)
+            
+        seq2_out = bc1 + bc2 + bc3
+        q_seq2_out = q_bc1 + q_bc2 + q_bc3
+        
 
 
 if __name__ == '__main__':
