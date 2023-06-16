@@ -137,7 +137,7 @@ def main():
         # since bccorrection returns empty bc if not found
         # we can use it to skip bad reads
         
-        if len(seq2_out) != q_seq2_out and options.filter_failed:
+        if len(seq2_out) != len(q_seq2_out) and options.filter_failed:
             continue
         
         if options.rna:
