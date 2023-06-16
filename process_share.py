@@ -28,7 +28,7 @@ def correct_bc(bc, bc_list, distance=1):
         # return the first one
         return bc_list[accepted[0]]
     else:
-        return -1
+        return b''
  
 
 def get_options():
@@ -133,6 +133,12 @@ def main():
             
         seq2_out = bc1 + bc2 + bc3
         q_seq2_out = q_bc1 + q_bc2 + q_bc3
+        
+        # since bccorrection returns empty bc if not found
+        # we can use it to skip bad reads
+        
+        if len(seq2_out) != q_seq2_out and options.filter_failed:
+            continue
         
         if options.rna:
             seq2_out = seq2_out + seq3[:options.stitch_length]
