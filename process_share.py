@@ -144,7 +144,7 @@ def main():
         if not options.rna:
             r3_spool = r3_spool + name3 + nl + seq3 + dnl + qual3 + nl
         
-        _spool_couter += 1
+        _spool_counter += 1
         
         if _spool_counter == _chunk_size:
             fh_out1.write(r1_spool)
