@@ -121,11 +121,6 @@ def demux():
                 spool[un_filenames[1]] = spool[un_filenames[1]] + name2 + nl + seq2 + dnl + qual2 + nl
                 if options.barcodes:
                     spool[un_filenames[2]] = spool[un_filenames[2]] + nameb + nl + seqb + dnl + qualb + nl
-
-#                reads[0].write_to_fastq_file(wfh[un_filenames[0]])
-#                reads[1].write_to_fastq_file(wfh[un_filenames[1]])
-#                if options.barcodes:
-#                    reads[2].write_to_fastq_file(wfh[un_filenames[2]])
             continue    
         bc_dist = [hamming(seq1[:8], x)for x in _bc_A]
         amin = [x for x in range(len(bc_dist)) if bc_dist[x] == min(bc_dist)][0]
@@ -142,15 +137,12 @@ def demux():
             # found
             spool[fname1] = spool[fname1] + name1 + nl + seq1[27:] + dnl + qual1[27:] + nl
             spool[fname2] = spool[fname2] + name2 + nl + seq2 + dnl + qual2 + nl
-#            reads[0][27:].write_to_fastq_file(wfh[fname1])
-#            reads[1][4:].write_to_fastq_file(wfh[fname2])
             if options.barcodes:
                 if options.tagdust:
                     fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq.gz'
                 else:
                     fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq.gz'
                 spool[fnameb] = spool[fnameb] + nameb + nl + seqb + dnl + qualb + nl    
-#                reads[2].write_to_fastq_file(wfh[fnameb])
 
         elif options.write_unmatched:        
             spool[un_filenames[0]] = spool[un_filenames[0]] + name1 + nl + seq1 + dnl + qual1 + nl
@@ -173,14 +165,6 @@ def demux():
         wfh[k].close()
         
 
-#            reads[0].write_to_fastq_file(wfh[un_filenames[0]])
-#            reads[1].write_to_fastq_file(wfh[un_filenames[1]])
-#            if options.barcodes:
-#                reads[2].write_to_fastq_file(wfh[un_filenames[2]])
-
-#    for f in wfh:
-#        wfh[f].close()
-    
     eff = n_pass / n_tot * 100
     sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
     
