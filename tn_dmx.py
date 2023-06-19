@@ -138,7 +138,7 @@ def demux():
                 fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq.gz'
             else:
                 fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq.gz'
-                fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastqgz'
+                fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastq.gz'
             # found
             spool[fname1] = spool[fname1] + name1 + nl + seq1[27:] + dnl + qual1[27:] + nl
             spool[fname2] = spool[fname2] + name2 + nl + seq2 + dnl + qual2 + nl
