@@ -52,6 +52,8 @@ def get_options():
     parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')    
     parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', action='store_true')    
     parser.add_argument('-T', '--tagdust', help='tagdust compatible naming (for retrocompatibility with older getseq pipeline)', action='store_true')
+    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0)
+
     
     options = parser.parse_args()
     
@@ -101,6 +103,9 @@ def demux():
     _spool_counter = 0
     for reads in read_iterator:
         # check MEDSA spacer
+        
+        if options.n_seq > 0 and n_tot == options.n_seq:
+            break
         
         seq1 = reads[0].seq
         seq2 = reads[1].seq

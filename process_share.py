@@ -42,6 +42,7 @@ def get_options():
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
     parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
+    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0)
   
     options = parser.parse_args()
   
@@ -97,7 +98,14 @@ def main():
     r3_spool = b''
     _spool_counter = 0
     
+    n_tot = 0
+    n_dark = 0
+    n_fail = 0
     for item in read_iterator:
+    
+        if options.n_seq > 0 and n_tot == options.n_seq:
+            break
+    
         seq1 = item[0].seq
         seq2 = item[1].seq
         seq3 = item[2].seq
@@ -106,10 +114,13 @@ def main():
         qual2 = item[1].qualstr
         qual3 = item[2].qualstr
 
-        
+        n_tot += 1
+       
         is_dark = False
         if seq3[:20] == dark:
             is_dark = True
+            n_dark += 1
+        
         
         if options.filter_failed and is_dark:
             continue
@@ -138,6 +149,7 @@ def main():
         # we can use it to skip bad reads
         
         if len(seq2_out) != len(q_seq2_out) and options.filter_failed:
+            n_fail += 1
             continue
         
         if options.rna:
@@ -175,10 +187,14 @@ def main():
             fh_out3.close()
             raw_out3.close()
 
+    n_pass = n_tot - n_dark - n_fail
+    eff = n_pass / n_tot * 100
+    sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
+    eff = n_dark / n_tot * 100
+    sys.stderr.write(f'Found {n_dark} dark sequences {eff:.3f}%\n')
+    eff = n_fail / n_tot * 100
+    sys.stderr.write(f'Could not fix barcode for {n_dark} sequences {eff:.3f}%\n')
 
-            
-        
-            
 
 
 if __name__ == '__main__':
