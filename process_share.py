@@ -192,7 +192,7 @@ def main():
     sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
     eff = n_dark / n_tot * 100
     sys.stderr.write(f'Found {n_dark} dark sequences {eff:.3f}%\n')
-    eff = n_fail / n_tot * 100
+    eff = n_fail / (n_tot - n_dark) * 100
     sys.stderr.write(f'Could not fix barcode for {n_fail} sequences {eff:.3f}%\n')
 
 
