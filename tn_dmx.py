@@ -169,6 +169,7 @@ def demux():
     for k in wfh_bgz.keys():
         if len(spool[k]) > 0:
             wfh_bgz[k].write(spool[k])
+            wfh_bgz[k].close()
         wfh[k].close()
         
 
