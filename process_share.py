@@ -189,9 +189,12 @@ def main():
 
     n_pass = n_tot - n_dark - n_fail
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
-    sys.stderr.write(f"Dark sequences:\t{n_dark}\n")
-    sys.stderr.write(f"Failed BC:\t{n_fail}\n")
-    sys.stderr.write(f"Passing sequences:\t{n_pass}\n")
+    f = n_dark / n_tot * 100
+    sys.stderr.write(f"Dark sequences:\t{n_dark} ({f:.3f}%)\n")
+    f = n_dark / (n_tot - n_dark) * 100
+    sys.stderr.write(f"Failed BC:\t{n_fail} ({f:.3f}%)\n")
+    f = n_pass / n_tot * 100
+    sys.stderr.write(f"Passing sequences:\t{n_pass} ({f:.3f}%)\n")
     
 #    eff = n_pass / n_tot * 100
 #    sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
