@@ -2,6 +2,8 @@ import HTSeq
 import sys
 import argparse
 import editdistance as ed
+import bgzip
+
 
 _SPACER_MAXDIST = 2
 _BC_MAXDIST = 1
@@ -31,6 +33,17 @@ dbc_A = {
 # binary decoder to be quicker
 _dbc_A = dict(zip(_bc_A, bc_A))
 
+def hamming(a, b):
+    la = len(a)
+    lb = len(b)
+    if la != lb:
+        return la
+    return sum([a[x] != b[x] for x in range(len(a))])
+
+def empty_spool(d):
+    for k in d:
+        d[k] = b''
+
 def get_options():
 	parser = argparse.ArgumentParser(prog='ab_tmx.py')
 	parser.add_argument('-p', '--prefix', help='Prefix for output files', default='out')
@@ -45,6 +58,10 @@ def get_options():
 	return options
 
 def demux():
+    nl = b'\n'
+    dnl = b'\n+\n'
+    _chunk_size = 512 # number 
+
 	options = get_options()	
 	out_r1 = 'R1'
 	out_r2 = 'R2'
@@ -52,20 +69,24 @@ def demux():
 	if options.barcodes:
 		suffix = [out_r1, out_r2, 'RB']
 
-	filenames = [f'{options.prefix}_{a}_{r}_{dbc_A[a]}.fastq' for a in bc_A for r in suffix]
+	filenames = [f'{options.prefix}_{a}_{r}_{dbc_A[a]}.fastq.gz' for a in bc_A for r in suffix]
 	un_filenames = []
 	if options.write_unmatched:
-		un_filenames =  [f'{options.prefix}_un_{r}.fastq' for r in suffix]
+		un_filenames =  [f'{options.prefix}_un_{r}.fastq.gz' for r in suffix]
 		
 	if options.tagdust:
 		suffix = ['READ1', 'READ3', 'READ2']
-		filenames = [f'{options.prefix}_BC_{a}_{r}.fq' for a in bc_A for r in suffix]		
-		un_filenames = [f'{options.prefix}_un_{r}.fq' for r in suffix]
+		filenames = [f'{options.prefix}_BC_{a}_{r}.fq.gz' for a in bc_A for r in suffix]		
+		un_filenames = [f'{options.prefix}_un_{r}.fq.gz' for r in suffix]
 		options.write_unmatched = True
 
 	wfh = dict.fromkeys(filenames + un_filenames)
+	wfh_bgz = dict.fromkeys(filenames + un_filenames)
+	spool = dict.fromkeys(filenames + un_filenames)
 	for f in wfh:
-		wfh[f] = open(f, 'w')
+		wfh[f] = open(f, 'wb')
+		wfh_bgz[f] = bgzip.BGZipWriter(wfh[f])
+		spool[f] = b''
 	
 	r1 = HTSeq.FastqReader(options.read1)
 	r2 = HTSeq.FastqReader(options.read2)	
@@ -79,44 +100,84 @@ def demux():
 	n_pass = 0
 	for reads in read_iterator:
 		# check MEDSA spacer
+		
+		seq1 = reads[0].seq
+		seq2 = reads[1].seq
+		seqb = reads[2].seq
+		
+		qual1 = reads[0].qualstr
+		qual1 = reads[1].qualstr
+		qualb = reads[2].qualstr
+		
+		name1 = f'@{reads[0].name}'.encode()
+		name2 = f'@{reads[1].name}'.encode()
+		nameb = f'@{reads[2].name}'.encode()
+		
 		n_tot += 1
-		if ed.eval(reads[0].seq[8:27], _sp_A) > _SPACER_MAXDIST:
+		if hamming(seq1[8:27], _sp_A) > _SPACER_MAXDIST:
 			if options.write_unmatched:
-				reads[0].write_to_fastq_file(wfh[un_filenames[0]])
-				reads[1].write_to_fastq_file(wfh[un_filenames[1]])
-				if options.barcodes:
-					reads[2].write_to_fastq_file(wfh[un_filenames[2]])
+			    spool[un_filenames[0]] = spool[un_filenames[0]] + name1 + nl + seq1 + dnl + qual1 + nl
+			    spool[un_filenames[1]] = spool[un_filenames[1]] + name2 + nl + seq2 + dnl + qual2 + nl
+			    if options.barcodes:
+                    spool[un_filenames[2]] = spool[un_filenames[2]] + nameb + nl + seqb + dnl + qualb + nl
+
+#				reads[0].write_to_fastq_file(wfh[un_filenames[0]])
+#				reads[1].write_to_fastq_file(wfh[un_filenames[1]])
+#				if options.barcodes:
+#					reads[2].write_to_fastq_file(wfh[un_filenames[2]])
 			continue	
-		bc_dist = [ed.eval(reads[0].seq[:8], x)for x in _bc_A]
+		bc_dist = [hamming(seq1[:8], x)for x in _bc_A]
 		amin = [x for x in range(len(bc_dist)) if bc_dist[x] == min(bc_dist)][0]
 		
 		if bc_dist[amin] <= _BC_MAXDIST:
 			n_pass += 1
 			bc1 = _dbc_A[_bc_A[amin]]
 			if options.tagdust:
-				fname1 = f'{options.prefix}_BC_{bc1}_READ1.fq'
-				fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq'
+				fname1 = f'{options.prefix}_BC_{bc1}_READ1.fq.gz'
+				fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq.gz'
 			else:
-				fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq'
-				fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastq'
+				fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq.gz'
+				fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastqgz'
 			# found
-			reads[0][27:].write_to_fastq_file(wfh[fname1])
-			reads[1][4:].write_to_fastq_file(wfh[fname2])
+            spool[fname1] = spool[fname1] + name1 + nl + seq1[27:] + dnl + qual1[27:] + nl
+            spool[fname2] = spool[fname2] + name2 + nl + seq2 + dnl + qual2 + nl
+#			reads[0][27:].write_to_fastq_file(wfh[fname1])
+#			reads[1][4:].write_to_fastq_file(wfh[fname2])
 			if options.barcodes:
 				if options.tagdust:
-					fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq'
+					fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq.gz'
 				else:
-					fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq'
-				reads[2].write_to_fastq_file(wfh[fnameb])
+					fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq.gz'
+				spool[fnameb] = spool[fnameb] + nameb + nl + seqb + dnl + qualb + nl	
+#				reads[2].write_to_fastq_file(wfh[fnameb])
 
 		elif options.write_unmatched:		
-			reads[0].write_to_fastq_file(wfh[un_filenames[0]])
-			reads[1].write_to_fastq_file(wfh[un_filenames[1]])
-			if options.barcodes:
-				reads[2].write_to_fastq_file(wfh[un_filenames[2]])
+		    spool[un_filenames[0]] = spool[un_filenames[0]] + name1 + nl + seq1 + dnl + qual1 + nl
+            spool[un_filenames[1]] = spool[un_filenames[1]] + name2 + nl + seq2 + dnl + qual2 + nl
+            if options.barcodes:
+                spool[un_filenames[2]] = spool[un_filenames[2]] + nameb + nl + seqb + dnl + qualb + nl
 
-	for f in wfh:
-		wfh[f].close()
+        _spool_counter += 1
+        if _spool_counter == _chunk_size:
+            for k in wfh_bgz.keys():
+                wfh_bgz[k].write(spool[k])
+                spool[k] = b''
+            _spool_counter = 0
+
+    # end, write remaining spool and close files
+    for k in wfh_bgz.keys():
+        if len(spool[k]) > 0:
+            wfh_bgz[k].write(spool[k])
+        wfh[k].close()
+        
+
+#			reads[0].write_to_fastq_file(wfh[un_filenames[0]])
+#			reads[1].write_to_fastq_file(wfh[un_filenames[1]])
+#			if options.barcodes:
+#				reads[2].write_to_fastq_file(wfh[un_filenames[2]])
+
+#	for f in wfh:
+#		wfh[f].close()
 	
 	eff = n_pass / n_tot * 100
 	sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
