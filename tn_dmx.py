@@ -1,7 +1,7 @@
 import HTSeq
 import sys
 import argparse
-import editdistance as ed
+#import editdistance as ed
 import bgzip
 
 
@@ -98,6 +98,7 @@ def demux():
     
     n_tot = 0
     n_pass = 0
+    _spool_counter = 0
     for reads in read_iterator:
         # check MEDSA spacer
         
@@ -106,7 +107,7 @@ def demux():
         seqb = reads[2].seq
         
         qual1 = reads[0].qualstr
-        qual1 = reads[1].qualstr
+        qual2 = reads[1].qualstr
         qualb = reads[2].qualstr
         
         name1 = f'@{reads[0].name}'.encode()
