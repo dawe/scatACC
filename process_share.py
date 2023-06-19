@@ -188,12 +188,17 @@ def main():
             raw_out3.close()
 
     n_pass = n_tot - n_dark - n_fail
-    eff = n_pass / n_tot * 100
-    sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
-    eff = n_dark / n_tot * 100
-    sys.stderr.write(f'Found {n_dark} dark sequences {eff:.3f}%\n')
-    eff = n_fail / (n_tot - n_dark) * 100
-    sys.stderr.write(f'Could not fix barcode for {n_fail} sequences {eff:.3f}%\n')
+    sys.stderr.write(f"Total sequences:\t{n_tot}\n")
+    sys.stderr.write(f"Dark sequences:\t{n_dark}\n")
+    sys.stderr.write(f"Failed BC:\t{n_fail}\n")
+    sys.stderr.write(f"Passing sequences:\t{n_pass}\n")
+    
+#    eff = n_pass / n_tot * 100
+#    sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
+#    eff = n_dark / n_tot * 100
+#    sys.stderr.write(f'Found {n_dark} dark sequences {eff:.3f}%\n')
+#    eff = n_fail / (n_tot - n_dark) * 100
+#    sys.stderr.write(f'Could not fix barcode for {n_fail} sequences {eff:.3f}%\n')
 
 
 
