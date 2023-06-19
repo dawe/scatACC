@@ -42,7 +42,7 @@ def get_options():
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
     parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
-    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0)
+    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
   
     options = parser.parse_args()
   

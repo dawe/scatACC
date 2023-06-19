@@ -52,7 +52,7 @@ def get_options():
     parser.add_argument('-b', '--barcodes', help='Fastq file with cell barcodes (is R2 in scGETseq only)')    
     parser.add_argument('-U', '--write_unmatched', help='Dump unmatched reads', action='store_true')    
     parser.add_argument('-T', '--tagdust', help='tagdust compatible naming (for retrocompatibility with older getseq pipeline)', action='store_true')
-    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0)
+    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
 
     
     options = parser.parse_args()
