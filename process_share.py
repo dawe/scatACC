@@ -191,7 +191,7 @@ def main():
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
     f = n_dark / n_tot * 100
     sys.stderr.write(f"Dark sequences:\t{n_dark} ({f:.3f}%)\n")
-    f = n_dark / (n_tot - n_dark) * 100
+    f = n_fail / (n_tot - n_dark) * 100
     sys.stderr.write(f"Failed BC:\t{n_fail} ({f:.3f}%)\n")
     f = n_pass / n_tot * 100
     sys.stderr.write(f"Passing sequences:\t{n_pass} ({f:.3f}%)\n")
