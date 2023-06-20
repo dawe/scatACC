@@ -100,7 +100,10 @@ def demux():
     
     n_tot = 0
     n_pass = 0
-    _spool_counter = 0
+    _spool_counter = {}
+    for k in wfh.keys():
+        _spool_counter[k] = 0
+        
     for reads in read_iterator:
         # check MEDSA spacer
         
@@ -156,15 +159,15 @@ def demux():
                 spool[un_filenames[2]] = spool[un_filenames[2]] + nameb + nl + seqb + dnl + qualb + nl
 
         _spool_counter += 1
-        if _spool_counter == _chunk_size:
-            for k in wfh_bgz.keys():
+        for k in _spool_counter.keys():
+            if _spool_counter[k] == _chunk_size:
                 wfh_bgz[k].write(spool[k])
                 spool[k] = b''
-            _spool_counter = 0
+                _spool_counter[k] = 0
 
     # end, write remaining spool and close files
     for k in wfh_bgz.keys():
-        if len(spool[k]) > 0:
+        if len(wfh_bgz[k]) > 0:
             wfh_bgz[k].write(spool[k])
             wfh_bgz[k].close()
         wfh[k].close()
