@@ -175,17 +175,16 @@ def main():
             _spool_counter = 0
     
     # end, write remaining spool and close files
-    if len(r1_spool) > 0:
-        fh_out1.write(r1_spool)
-        fh_out1.close()
-        raw_out1.close()
-        fh_out2.write(r2_spool)
-        fh_out2.close()
-        raw_out2.close()
-        if not options.rna:
-            fh_out3.write(r3_spool)
-            fh_out3.close()
-            raw_out3.close()
+    fh_out1.write(r1_spool)
+    fh_out1.close()
+    raw_out1.close()
+    fh_out2.write(r2_spool)
+    fh_out2.close()
+    raw_out2.close()
+    if not options.rna:
+        fh_out3.write(r3_spool)
+        fh_out3.close()
+        raw_out3.close()
 
     n_pass = n_tot - n_dark - n_fail
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
