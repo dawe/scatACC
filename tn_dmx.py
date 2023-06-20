@@ -154,7 +154,7 @@ def demux():
                     fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq.gz'
                 spool[fnameb] = spool[fnameb] + nameb + nl + seqb + dnl + qualb + nl    
                 _spool_counter[fnameb] += 1
-        elif options.write_unmatched:        
+nn        elif options.write_unmatched:        
             spool[un_filenames[0]] = spool[un_filenames[0]] + name1 + nl + seq1 + dnl + qual1 + nl
             spool[un_filenames[1]] = spool[un_filenames[1]] + name2 + nl + seq2 + dnl + qual2 + nl
             _spool_counter[un_filenames[0]] += 1
@@ -172,9 +172,8 @@ def demux():
 
     # end, write remaining spool and close files
     for k in wfh_bgz.keys():
-        if len(wfh_bgz[k]) > 0:
-            wfh_bgz[k].write(spool[k])
-            wfh_bgz[k].close()
+        wfh_bgz[k].write(spool[k])
+        wfh_bgz[k].close()
         wfh[k].close()
         
 
