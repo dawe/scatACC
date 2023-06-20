@@ -145,20 +145,25 @@ def demux():
             # found
             spool[fname1] = spool[fname1] + name1 + nl + seq1[27:] + dnl + qual1[27:] + nl
             spool[fname2] = spool[fname2] + name2 + nl + seq2 + dnl + qual2 + nl
+            _spool_counter[fname1] += 1
+            _spool_counter[fname2] += 1
             if options.barcodes:
                 if options.tagdust:
                     fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq.gz'
                 else:
                     fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq.gz'
                 spool[fnameb] = spool[fnameb] + nameb + nl + seqb + dnl + qualb + nl    
-
+                _spool_counter[fnameb] += 1
         elif options.write_unmatched:        
             spool[un_filenames[0]] = spool[un_filenames[0]] + name1 + nl + seq1 + dnl + qual1 + nl
             spool[un_filenames[1]] = spool[un_filenames[1]] + name2 + nl + seq2 + dnl + qual2 + nl
+            _spool_counter[un_filenames[0]] += 1
+            _spool_counter[un_filenames[1]] += 1
+
             if options.barcodes:
                 spool[un_filenames[2]] = spool[un_filenames[2]] + nameb + nl + seqb + dnl + qualb + nl
+                _spool_counter[un_filenames[2]] += 1
 
-        _spool_counter += 1
         for k in _spool_counter.keys():
             if _spool_counter[k] == _chunk_size:
                 wfh_bgz[k].write(spool[k])
