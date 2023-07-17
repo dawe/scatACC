@@ -86,11 +86,11 @@ def main():
     
     raw_out1 = open(fout1, 'wb')
     raw_out2 = open(fout2, 'wb')
-    fh_out1 = bgzip.BGZipWriter(raw_out1)
-    fh_out2 = bgzip.BGZipWriter(raw_out2)
+    fh_out1 = bgzip.BGZipWriter(raw_out1, batch_size=256)
+    fh_out2 = bgzip.BGZipWriter(raw_out2, batch_size=256)
     if not options.rna:
         raw_out3 = open(fout3, 'wb')
-        fh_out3 = bgzip.BGZipWriter(raw_out3)
+        fh_out3 = bgzip.BGZipWriter(raw_out3, batch_size=256)
     # remember to write bytes, not strings
 
     r1_spool = b''

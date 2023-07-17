@@ -89,7 +89,7 @@ def demux():
     spool = dict.fromkeys(filenames + un_filenames)
     for f in wfh:
         wfh[f] = open(f, 'wb')
-        wfh_bgz[f] = bgzip.BGZipWriter(wfh[f])
+        wfh_bgz[f] = bgzip.BGZipWriter(wfh[f], batch_size=128)
         spool[f] = b''
     
     r1 = HTSeq.FastqReader(options.read1)
@@ -143,7 +143,9 @@ def demux():
             bc1 = _dbc_A[_bc_A[amin]]
             if options.tagdust:
                 fname1 = f'{options.prefix}_BC_{bc1}_READ1.fq.gz'
-                fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq.gz'
+                fname2 = f'{options.prefix}_BC_{bc1}_READ2.fq.gz'
+                if options.barcodes:
+                    fname2 = f'{options.prefix}_BC_{bc1}_READ3.fq.gz'
             else:
                 fname1 = f'{options.prefix}_{bc1}_R1_{dbc_A[bc1]}.fastq.gz'
                 fname2 = f'{options.prefix}_{bc1}_R2_{dbc_A[bc1]}.fastq.gz'
