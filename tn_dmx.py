@@ -77,7 +77,9 @@ def demux():
         un_filenames =  [f'{options.prefix}_un_{r}.fastq.gz' for r in suffix]
         
     if options.tagdust:
-        suffix = ['READ1', 'READ3', 'READ2']
+        suffix = ['READ1', 'READ2']
+        if options.barcodes:
+            suffix = ['READ1', 'READ3', 'READ2']
         filenames = [f'{options.prefix}_BC_{a}_{r}.fq.gz' for a in bc_A for r in suffix]        
         un_filenames = [f'{options.prefix}_un_{r}.fq.gz' for r in suffix]
         options.write_unmatched = True
@@ -112,15 +114,18 @@ def demux():
         
         seq1 = reads[0].seq
         seq2 = reads[1].seq
-        seqb = reads[2].seq
+        if options.barcodes:
+            seqb = reads[2].seq
         
         qual1 = reads[0].qualstr
         qual2 = reads[1].qualstr
-        qualb = reads[2].qualstr
+        if options.barcodes:
+            qualb = reads[2].qualstr
         
         name1 = f'@{reads[0].name}'.encode()
         name2 = f'@{reads[1].name}'.encode()
-        nameb = f'@{reads[2].name}'.encode()
+        if options.barcodes:
+            nameb = f'@{reads[2].name}'.encode()
         
         n_tot += 1
         if hamming(seq1[8:27], _sp_A) > _SPACER_MAXDIST:
