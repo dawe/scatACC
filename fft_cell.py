@@ -48,8 +48,8 @@ def parse_beds(sample, path, barcodes, whitelist=set(), max_lines=-1):
             if is_gzip:
                 line = line.decode('ascii')
             fields = line.split('\t')
-            cell = t[3]
-            frag_len = int(t[2]) - int(t[1])
+            cell = fields[3]
+            frag_len = int(fields[2]) - int(fields[1])
         
             if not cell in csize:
                 csize[cell] = []
