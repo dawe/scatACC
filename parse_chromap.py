@@ -48,7 +48,7 @@ def parse_chromap():
     M = dict([(x, sp.lil_matrix((len(whitelist), len(bins)))) for x in barcodes.keys()])
 
     for tn in barcodes:
-        for bc in barcodes[tn]:
+        for barcode in barcodes[tn]:
             filename = f'{path}/{sample}_BC_{barcode}.bed'
             if os.path.exists(filename):
                 is_gzip = False
@@ -64,7 +64,7 @@ def parse_chromap():
             else:
                 fh = open(filename)
     
-            print(tn, bc)
+            print(tn, barcode)
             for line in tqdm(fh):
                 if is_gzip:
                     line = line.decode('ascii')
