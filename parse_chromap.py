@@ -14,6 +14,7 @@ def get_options():
     parser = argparse.ArgumentParser(prog='parse_chromap.py')
     parser.add_argument('-i', '--sample', help='Sample name (sample_BC_barcode.bed)', required=True)
     parser.add_argument('-b', '--bin_file', help='BED file with genomic bins')
+    parser.add_argument('-p', '--path', help='Path of BED files', default='.')
     parser.add_argument('-S', '--bin_size', help='Bin size', default=5000, type=int)
     parser.add_argument('-N', '--no_nfr', help='Discard NFR from tnH signal', action='store_true')
     parser.add_argument('-l', '--frag_len', help='Max size for NFR', default=120, type=int)
@@ -34,6 +35,7 @@ def parse_chromap():
     chroms = set(bins[0])
     offsets = dict.fromkeys(chroms)
     
+    path = options.path
     for c in chroms:
         offsets[c] = np.where(bins[0]==c)[0][0]
         
