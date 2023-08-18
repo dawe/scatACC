@@ -77,18 +77,18 @@ def parse_chromap():
                 if tn == 'tnH' and options.no_nfr:
                     if int(end) - int(start) > options.frag_len:
                         continue
-                os = int(start) // bin_size
-                oe = int(end) // bin_size
+                ostart = int(start) // bin_size
+                oend = int(end) // bin_size
                 dup_count = int(dup_count)
-                if os != oe:
-                    c_idx = os + offsets[chrom]
+                if ostart != oend:
+                    c_idx = ostart + offsets[chrom]
                     r_idx = bidx[name]
                     M[tn][r_idx, c_idx] = M[tn][r_idx, c_idx] + 1
-                    c_idx = oe + offsets[chrom]
+                    c_idx = oend + offsets[chrom]
                     r_idx = bidx[name]
                     M[tn][r_idx, c_idx] = M[tn][r_idx, c_idx] + 1
                 else:
-                    c_idx = os + offsets[chrom]
+                    c_idx = ostart + offsets[chrom]
                     r_idx = bidx[name]
                     M[tn][r_idx, c_idx] = M[tn][r_idx, c_idx] + 1
             
