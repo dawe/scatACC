@@ -83,6 +83,7 @@ def fft_cell():
     csize_tnh = dict()
 
     cells = set(_csize_tn5.keys()).intersection(_csize_tnh.keys())
+    cells = list(cells)
     for cell in cells:
         csize_tn5[cell] = np.array(_csize_tn5[cell])
         csize_tnh[cell] = np.array(_csize_tnh[cell])
