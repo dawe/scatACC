@@ -34,9 +34,9 @@ def parse_beds(sample, path, barcodes, whitelist=set(), max_lines=-1):
             continue    
 
         if is_gzip:
-            fh = gzip.open(options.input)
+            fh = gzip.open(filename)
         else:
-            fh = open(options.input)
+            fh = open(filename)
     
         nl = 0
         sys.stderr.write(f"Parsing {filename}")
