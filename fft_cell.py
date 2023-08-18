@@ -14,7 +14,7 @@ def get_options():
     parser.add_argument('-p', '--path', help='Path of BED files', default='.')
     parser.add_argument('-o', '--output', help='Output file', default='output.pickle')
     parser.add_argument('-w', '--whitelist', help='Limit the analysis to these cells')
-    parser.add_argument('-n', '--number', help='Limit the analysis to these much fragments', default=-1)
+    parser.add_argument('-n', '--number', help='Limit the analysis to these much fragments', default=-1, type=int)
   
     options = parser.parse_args()
     return options
