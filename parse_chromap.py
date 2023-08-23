@@ -101,7 +101,7 @@ def parse_chromap():
     adata.obs_names = whitelist
     adata.var_names = [f"{x[0]}:{x[1]}-{x[2]}" for x in bins.values]
     
-    adata.uns['NFR'] = {'parse_NFR':options.no_nfr, 'threshold':options.frag_len}
+    adata.uns['NFR'] = {'skip_NFR':options.no_nfr, 'threshold':options.frag_len}
     
     adata.write(f"{sample}.h5ad")
 
