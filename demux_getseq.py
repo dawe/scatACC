@@ -143,10 +143,7 @@ def demux():
             _spool_counter[fname1] += 1
             _spool_counter[fname2] += 1
             if options.barcodes:
-                if options.tagdust:
-                    fnameb = f'{options.prefix}_BC_{bc1}_READ2.fq.gz'
-                else:
-                    fnameb = f'{options.prefix}_{bc1}_RB_{dbc_A[bc1]}.fastq.gz'
+                fnameb = f'{options.prefix}_{use_tn}_RB.fastq.gz'
                 spool[fnameb] = spool[fnameb] + nameb + nl + seqb + dnl + qualb + nl    
                 _spool_counter[fnameb] += 1
         elif options.write_unmatched:        
