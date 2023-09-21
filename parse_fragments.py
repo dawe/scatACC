@@ -104,9 +104,5 @@ def parse_fragments():
     
     adata.write(options.output)
         
-    
-    
-
-
 if __name__ == '__main__':
     parse_fragments()
