@@ -29,7 +29,7 @@ def parse_single_file(filename, whitelist=set(), max_lines=-1):
         is_gzip = True
         filename = f'{filename}.gz'
     else:
-        sys.stderr.write(f"File type not supported for sample {sample}, {barcode}\n")
+        sys.stderr.write(f"File type not supported for sample {filename}\n")
         return None    
 
     if is_gzip:
@@ -86,7 +86,7 @@ def fft_cell():
     if options.whitelist:
         for line in open(options.whitelist):
             t = line.split()
-            whitelist.add([t[0]])
+            whitelist.update([t[0]])
 
     if options.atac:
         filename = f'{options.sample}.bed'

@@ -42,7 +42,7 @@ def parse_chromap():
     barcodes =  {'tn5':['CGTACTAG','TCCTGAGC','TCATGAGC','CCTGAGAT'],
                  'tnH':['TAAGGCGA','GCTACGCT','AGGCTCCG','CTGCGCAT']}
                  
-    whitelist = [x.split()[0] for x in open(f"{sample}_whitelist.tsv")]
+    whitelist = [x.split()[0] for x in open(f"{path}/{sample}_whitelist.tsv")]
     bidx = dict([(whitelist[x], x) for x in range(len(whitelist))])
 
     M = dict([(x, sp.lil_matrix((len(whitelist), len(bins)))) for x in barcodes.keys()])

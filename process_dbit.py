@@ -75,7 +75,7 @@ def main():
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
 
-    read_iterator = zip(r1, r2, r3)
+    read_iterator = zip(r1, r2)
     
     fout1 = f'{options.prefix}_R1.fastq.gz' # for R1
     fout2 = f'{options.prefix}_PB.fastq.gz' # for Barcode
@@ -104,16 +104,16 @@ def main():
     
         seq1 = item[0].seq
         seq2 = item[1].seq
-        seq3 = item[2].seq
+        seq3 = item[1].seq[68:]
 
         qual1 = item[0].qualstr
         qual2 = item[1].qualstr
-        qual3 = item[2].qualstr
+        qual3 = item[1].qualstr[68:]
 
         n_tot += 1
        
         spacer_wrong = False
-        if hamming(seq[:22], sp1) > options.threshold or hamming(seq[30:60], sp2) > options.threshold:
+        if hamming(seq2[:22], sp1) > options.threshold or hamming(seq2[30:60], sp2) > options.threshold:
             spacer_wrong = True
             n_spwrong += 1
         
@@ -123,7 +123,7 @@ def main():
 
         name1 = bytes('@' + item[0].name, encoding='ascii')
         name2 = bytes('@' + item[1].name, encoding='ascii')
-        name3 = bytes('@' + item[2].name, encoding='ascii')
+        name3 = bytes('@' + item[1].name, encoding='ascii')
             
         bc1 = seq2[22:30]
         bc2 = seq2[60:68]
