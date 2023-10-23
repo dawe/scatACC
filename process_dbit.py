@@ -174,7 +174,7 @@ def main():
     n_pass = n_tot - n_spwrong - n_fail
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
     f = n_spwrong / n_tot * 100
-    sys.stderr.write(f"Dark sequences:\t{n_spwrong} ({f:.3f}%)\n")
+    sys.stderr.write(f"Error in spacers:\t{n_spwrong} ({f:.3f}%)\n")
     f = n_fail / (n_tot - n_spwrong) * 100
     sys.stderr.write(f"Failed BC:\t{n_fail} ({f:.3f}%)\n")
     f = n_pass / n_tot * 100
