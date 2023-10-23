@@ -141,7 +141,7 @@ def main():
         # since bccorrection returns empty bc if not found
         # we can use it to skip bad reads
         
-        if options.filter_failed and len(seq2_out) != len(q_seq2_out):
+        if options.bc_correct_file and len(seq2_out) != len(q_seq2_out):
             n_fail += 1
             continue
         
