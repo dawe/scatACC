@@ -67,8 +67,8 @@ def main():
         bc_list = np.array(bc_list)
     
     
-    sp1 = 'CAAGCGTTGGCTTCTCGCATCT' # [0:12]
-    sp2 = 'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
+    sp1 = b'CAAGCGTTGGCTTCTCGCATCT' # [0:22]
+    sp2 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
 
     r1_out = open
 
@@ -95,7 +95,7 @@ def main():
     _spool_counter = 0
     
     n_tot = 0
-    n_dark = 0
+    n_spwrong = 0
     n_fail = 0
     for item in read_iterator:
     
@@ -112,14 +112,14 @@ def main():
 
         n_tot += 1
        
-#        is_dark = False
-#        if seq3[:20] == dark:
-#            is_dark = True
-#            n_dark += 1
+        spacer_wrong = False
+        if hamming(seq[:22], sp1) > options.threshold or hamming(seq[30:60], sp2) > options.threshold:
+            spacer_wrong = True
+            n_spwrong += 1
         
         
-#        if options.filter_failed and is_dark:
-#            continue
+        if options.filter_failed and spacer_wrong:
+            continue
 
         name1 = bytes('@' + item[0].name, encoding='ascii')
         name2 = bytes('@' + item[1].name, encoding='ascii')
@@ -171,20 +171,20 @@ def main():
     fh_out3.close()
     raw_out3.close()
 
-    n_pass = n_tot - n_dark - n_fail
+    n_pass = n_tot - n_spwrong - n_fail
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
-    f = n_dark / n_tot * 100
-    sys.stderr.write(f"Dark sequences:\t{n_dark} ({f:.3f}%)\n")
-    f = n_fail / (n_tot - n_dark) * 100
+    f = n_spwrong / n_tot * 100
+    sys.stderr.write(f"Dark sequences:\t{n_spwrong} ({f:.3f}%)\n")
+    f = n_fail / (n_tot - n_spwrong) * 100
     sys.stderr.write(f"Failed BC:\t{n_fail} ({f:.3f}%)\n")
     f = n_pass / n_tot * 100
     sys.stderr.write(f"Passing sequences:\t{n_pass} ({f:.3f}%)\n")
     
 #    eff = n_pass / n_tot * 100
 #    sys.stderr.write(f'Found {n_pass} out of {n_tot} sequences {eff:.3f}%\n')
-#    eff = n_dark / n_tot * 100
-#    sys.stderr.write(f'Found {n_dark} dark sequences {eff:.3f}%\n')
-#    eff = n_fail / (n_tot - n_dark) * 100
+#    eff = n_spwrong / n_tot * 100
+#    sys.stderr.write(f'Found {n_spwrong} dark sequences {eff:.3f}%\n')
+#    eff = n_fail / (n_tot - n_spwrong) * 100
 #    sys.stderr.write(f'Could not fix barcode for {n_fail} sequences {eff:.3f}%\n')
 
 
