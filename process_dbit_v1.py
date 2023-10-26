@@ -137,10 +137,10 @@ def main():
         name3 = bytes('@' + item[1].name, encoding='ascii')
             
         bc1 = seq2[0:8]
-        bc2 = seq2[46:54]
+        bc2 = seq2[38:46]
         
         q_bc1 = qual2[0:8]
-        q_bc2 = qual2[46:54]
+        q_bc2 = qual2[38:46]
         
         if bc_fix:
             bc1 = correct_bc(bc1, bc_list, options.threshold)
