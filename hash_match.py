@@ -11,6 +11,7 @@ def get_options():
     parser.add_argument('-W', '--whitelist_rna', help='UMI-tools whitelist for RNA', required=True)
     parser.add_argument('-H', '--whitelist_hash', help='UMI-tools whitelist for Hash', required=True)
     parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
+    parser.add_argument('-k', '--skip_unmatched', help='Skip entries not listed in any whitelist', action='store_true')
     
     options = parser.parse_args()
     
@@ -56,10 +57,19 @@ def process_tables():
         rna_bc = item[0].seq[:16]
         cell_hash = item[1].seq[:8]
         
+        skip = 0 
+        
         if rna_bc in bc_dict:
             rna_bc = bc_dict[rna_bc]
+        else:
+            skip += 1
         if cell_hash in hash_dict:
             cell_hash = hash_dict[cell_hash]
+        else:
+            skip += 1
+            
+        if skip > 0 and options.skip_unmatched:
+            continue
         
         if not rna_bc in hmatch:
             hmatch[rna_bc] = {cell_hash:1}
