@@ -37,7 +37,7 @@ def process_tables():
         hash_dict[base] = base
         for a in alt.split(','):
             a = bytes(a, encoding='ascii')
-            has_dict[a] = base
+            hash_dict[a] = base
     
     
     
