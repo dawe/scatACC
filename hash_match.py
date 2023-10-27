@@ -9,6 +9,7 @@ def get_options():
     parser.add_argument('-2', '--read2', help='Fastq file with R2', required=True)
     parser.add_argument('-W', '--whitelist_rna', help='UMI-tools whitelist for RNA', required=True)
     parser.add_argument('-H', '--whitelist_hash', help='UMI-tools whitelist for Hash', required=True)
+    parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
     
     options = parser.parse_args()
     
@@ -45,8 +46,12 @@ def process_tables():
     r2 = HTSeq.FastqReader(options.read2)    
     
     read_iterator = zip(r1, r2)
-    
+
+    n_tot = 0    
     for item in read_iterator:
+        if options.n_seq > 0 and n_tot == options.n_seq:
+            break
+    
         rna_bc = item[0].seq[:16]
         cell_hash = item[1].seq[:8]
         
@@ -61,8 +66,13 @@ def process_tables():
             hmatch[rna_bc][cell_hash] = 1
         else:
             hmatch[rna_bc][cell_hash] += 1
-     
         
+        n_tot += 1
+         
+    with open(options.output, 'w') as fout:
+        for bc in hmatch:
+            for ha in hmatch[bc]:
+                fout.write(f'{bc.decode()}\t{ha.decode}\t{hmatch[bc][ha]}\n')        
         
 
 
