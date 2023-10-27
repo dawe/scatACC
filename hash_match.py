@@ -72,7 +72,7 @@ def process_tables():
     with open(options.output, 'w') as fout:
         for bc in hmatch:
             for ha in hmatch[bc]:
-                fout.write(f'{bc.decode()}\t{ha.decode}\t{hmatch[bc][ha]}\n')        
+                fout.write(f'{bc.decode()}\t{ha.decode()}\t{hmatch[bc][ha]}\n')        
         
 
 
