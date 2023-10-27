@@ -17,6 +17,13 @@ def get_options():
     
     return options
 
+def hamming(a, b):
+    la = len(a)
+    lb = len(b)
+    if la != lb:
+        return la
+    return sum([a[x] != b[x] for x in range(len(a))])
+
 
 def process_tables():
     options = get_options()
@@ -27,20 +34,23 @@ def process_tables():
     hmatch = {}
     
     for line in open(options.whitelist_rna):
-        base, alt, counts, _ = line.split('\t')
-        base = bytes(base, encoding='ascii')
+        t = line.split('\t')
+        base = bytes(t[0], encoding='ascii')
         bc_dict[base] = base
-        for a in alt.split(','):
+        for a in t[1].split(','):
             a = bytes(a, encoding='ascii')
             bc_dict[a] = base
     
     for line in open(options.whitelist_hash):
-        base, alt, counts, _ = line.split('\t')
-        base = bytes(base, encoding='ascii')
+        t = line.split('\t')
+        base = bytes(t[0], encoding='ascii')
         hash_dict[base] = base
-        for a in alt.split(','):
+        for a in t[1].split(','):
             a = bytes(a, encoding='ascii')
             hash_dict[a] = base
+
+   # apparently umitools has issues with short barcodes and does not collapse
+   # correctly these 8 bp        
     
     
     
@@ -79,6 +89,9 @@ def process_tables():
             hmatch[rna_bc][cell_hash] = 1
         else:
             hmatch[rna_bc][cell_hash] += 1
+   
+
+
         
     with open(options.output, 'w') as fout:
         fout.write("cell_barcode\thash\tcount\n")
