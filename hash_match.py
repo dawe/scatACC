@@ -1,6 +1,7 @@
 import HTSeq
 import sys
 import argparse
+from tqdm import tqdm
 
 def get_options():
     parser = argparse.ArgumentParser(prog='hash_match.py')
@@ -48,7 +49,7 @@ def process_tables():
     read_iterator = zip(r1, r2)
 
     n_tot = 0    
-    for item in read_iterator:
+    for item in tqdm(read_iterator):
         if options.n_seq > 0 and n_tot == options.n_seq:
             break
     
