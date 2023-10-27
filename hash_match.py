@@ -53,6 +53,8 @@ def process_tables():
     for item in tqdm(read_iterator):
         if options.n_seq > 0 and n_tot == options.n_seq:
             break
+        n_tot += 1
+         
     
         rna_bc = item[0].seq[:16]
         cell_hash = item[1].seq[:8]
@@ -78,8 +80,6 @@ def process_tables():
         else:
             hmatch[rna_bc][cell_hash] += 1
         
-        n_tot += 1
-         
     with open(options.output, 'w') as fout:
         fout.write("cell_barcode\thash\tcount\n")
         for bc in hmatch:
