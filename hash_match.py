@@ -71,6 +71,7 @@ def process_tables():
         n_tot += 1
          
     with open(options.output, 'w') as fout:
+        fout.write("cell_barcode\thash\tcount\n")
         for bc in hmatch:
             for ha in hmatch[bc]:
                 fout.write(f'{bc.decode()}\t{ha.decode()}\t{hmatch[bc][ha]}\n')        
