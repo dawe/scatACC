@@ -60,14 +60,14 @@ def deconvolve():
     n_bins = chroms[chrom] // stepsize
     try:
         v1 = np.array(tn5.stats(chrom, nBins=n_bins))
-    except RunTimeError:
+    except RuntimeError:
         v1 = np.zeros(n_bins)
     v1[v1==None] = 0
     v1 = v1.astype(float)
 
     try:
         v2 = np.array(tnH.stats(chrom, nBins=n_bins))
-    except RunTimeError:
+    except RuntimeError:
         v2 = np.zeros(n_bins)
     v2[v2==None] = 0
     v2 = v2.astype(float)
