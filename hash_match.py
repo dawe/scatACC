@@ -12,6 +12,8 @@ def get_options():
     parser.add_argument('-H', '--whitelist_hash', help='UMI-tools whitelist for Hash', required=True)
     parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
     parser.add_argument('-k', '--skip_unmatched', help='Skip entries not listed in any whitelist', action='store_true')
+    parser.add_argument('-D', '--skip_duplicated', help='Skip entries with duplicated UMI', action='store_true')
+    parser.add_argument('-u', '--umi_length', help='Length of the UMI after the CB', default=12, type=int)
     
     options = parser.parse_args()
     
@@ -60,6 +62,11 @@ def process_tables():
     read_iterator = zip(r1, r2)
 
     n_tot = 0    
+    umi_start = 16
+    umi_end = umi_start + options.umi_length
+    umi_counter = {}
+    for bc in bc_dict.keys():
+        umi_counter[bc] = set()
     for item in tqdm(read_iterator):
         if options.n_seq > 0 and n_tot == options.n_seq:
             break
@@ -67,6 +74,7 @@ def process_tables():
          
     
         rna_bc = item[0].seq[:16]
+        rna_umi = item[0].seq[umi_start:umi_end]
         cell_hash = item[1].seq[:8]
         
         skip = 0 
@@ -79,10 +87,16 @@ def process_tables():
             cell_hash = hash_dict[cell_hash]
         else:
             skip += 1
-            
+    
         if skip > 0 and options.skip_unmatched:
             continue
         
+        if rna_umi in umi_counter[rna_bc] and options.skip_duplicated:
+            continue
+        else:
+            umi_counter[rna_bc].add(rna_umi)
+
+
         if not rna_bc in hmatch:
             hmatch[rna_bc] = {cell_hash:1}
         elif not cell_hash in hmatch[rna_bc]:

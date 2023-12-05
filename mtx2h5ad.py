@@ -23,11 +23,14 @@ def get_options():
 def parse_mtx():
 
     options = get_options()
+    prefix = options.prefix
     if options.star_base:
         basedir = f'{options.star_base}/Gene/raw/'
         spliced_mtx = f'{basedir}/matrix.mtx'
         basedir = f'{options.star_base}/Velocyto/raw/'
         unspliced_mtx = f'{basedir}/matrix.mtx'
+        if not prefix:
+            prefix=options.star_base
     else:
         spliced_mtx = options.spliced
         unspliced_mtx = options.unspliced       
@@ -66,7 +69,7 @@ def parse_mtx():
     adata.var.loc[:, 'n_cells'] = np.array(np.sum(adata.X, axis=0), dtype=int).ravel()
     adata.obs.loc[:, 'n_regions'] = np.array(np.sum(adata.X, axis=1), dtype=int).ravel()
 
-    adata.write(f'{options.prefix}.h5ad')
+    adata.write(f'{prefix}.h5ad')
 
 
 if __name__ == '__main__':

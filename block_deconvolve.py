@@ -21,12 +21,12 @@ def get_options():
   return options
 
 def wavelet_smooth(data, level, wavelet='sym7'):
+  if level == 0:
+    return data
   coefs = pywt.wavedec(data, wavelet)
   level = int(level)
   if level >= len(coefs):
     level = len(coefs) - 1
-  if level == 0:
-    return data
   for l in range(level):
     nl = l + 1
     coefs[-nl] = np.zeros_like(coefs[-nl])
@@ -60,8 +60,13 @@ def deconvolve():
     n_bins = chroms[chrom] // stepsize
     v1 = np.array(tn5.stats(chrom, nBins=n_bins))
     v2 = np.array(tnH.stats(chrom, nBins=n_bins))
-    v1[np.isnan(v1)] = 0
-    v2[np.isnan(v2)] = 0
+#    v1[np.isnan(v1)] = 0
+#    v2[np.isnan(v2)] = 0
+    v1[v1==None] = 0
+    v1 = v1.astype(float)
+    v2[v2==None] = 0
+    v2 = v2.astype(float)
+
     v1 = wavelet_smooth(v1, options.smooth)
     v2 = wavelet_smooth(v2, options.smooth)
     v1 = v1 / np.linalg.norm(v1) * options.scale
