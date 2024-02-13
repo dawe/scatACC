@@ -1,5 +1,6 @@
 import sys
 import os
+import gzip
 import scipy.optimize
 import numpy as np
 from scipy.special import lambertw as W
@@ -10,7 +11,10 @@ def fs(c, n):
 bedfile = sys.argv[1]
 outfile = sys.argv[2]
 
-prefix = os.path.basename(bedfile).replace('.bed', '')
+if bedfile.endswith('.bed.gz'):
+    prefix = os.path.basename(bedfile).replace('.bed.gz', '')
+else:
+    prefix = os.path.basename(bedfile).replace('.bed', '')
 
 print(f"Sample:\t{prefix}")
 
@@ -22,8 +26,12 @@ for line in lines[-15:-2]:
             line = line[:-1]
         print(line.replace(': ', ':\t'))
 
-with open(bedfile) as f:
-    dups = [int(x.split()[-1]) for x in f]
+if bedfile.endswith('.bed.gz'):
+    with gzip.open(bedfile) as f:
+        dups = [int(x.decode('ascii').split()[-1]) for x in f]
+else:
+    with open(bedfile) as f:
+        dups = [int(x.split()[-1]) for x in f]
 u, n = np.unique(dups, return_counts=True)
 N = np.sum(u*n)
 C = np.sum(n)

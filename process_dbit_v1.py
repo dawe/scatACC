@@ -74,8 +74,6 @@ def main():
     sp1 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [8:38]
     sp2 = b'GTGGCCGATGTTTCGCATCGGCGTACGACTAGATGTGTATAAGAGACAG' # [54:103]
 
-    r1_out = open
-
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
 

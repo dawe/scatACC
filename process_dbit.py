@@ -70,8 +70,6 @@ def main():
     sp1 = b'CAAGCGTTGGCTTCTCGCATCT' # [0:22]
     sp2 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
 
-    r1_out = open
-
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
 
@@ -110,15 +108,6 @@ def main():
         qual2 = item[1].qualstr
         qual3 = item[1].qualstr[68:]
         
-        if len(seq3) >= 50:
-            # if there's enough sequence beyond the adapter
-            # return the sequence
-            # otherwise we may return nothing?
-            seq3 = seq3[49:]
-            qual3 = qual3[49:]
-        else:
-            qual3 = seq3 = b''
-
         if len(seq3) >= 50:
             # if there's enough sequence beyond the adapter
             # return the sequence
