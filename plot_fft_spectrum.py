@@ -8,14 +8,31 @@ import scipy.stats
 import scipy.signal
 import os
 import sys
+import gzip
 
 plt.rcParams['font.size'] = 8
-
+use_gzip=False
 bedfile=sys.argv[1]
-sample=bedfile.replace('.bed', '')
+if bedfile.endswith('.gz'):
+    sample=bedfile.replace('.bed.gz', '')
+    use_gzip=True
+elif bedfile.endswith('.bed'):
+    sample=bedfile.replace('.bed', '')
+    use_gzip=False
+else:
+    sys.stderr.write(f"Don't know how to handle this file {bedfile}\n")
+    sys.exit(1)
 
 isizes = []
-for line in open(bedfile):
+
+if use_gzip:
+    f_iterator = gzip.open(bedfile)
+else:
+    f_iterator = open(bedfile)
+
+for line in f_iterator:
+    if use_gzip:
+        line = line.decode('ascii')
     t = line.split()
     if t[0]=='chrM':
         continue
