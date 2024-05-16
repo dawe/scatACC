@@ -14,6 +14,10 @@ import HTSeq
 # CAAGCGTTGGCTTCTCGCATCT AGTGGTCA ATCCACGTGCTTGAG AGGCCAGAGCATTCG AACGCTTA
 # ---------------------- 22222222 --------------- --------------- 11111111
 
+# in RNA
+# GAAGCGTTGGCTTCTCGCATCT CAACCACA ATCCACGTGCTTGAG AGGCCAGAGCATTCG ACATTGGC GTGGCCGATGTTTCGCATCGGCGTACGA CTTAGTGGGT ATTTTTTTTTTTTTTTGTTTATGGGGTTTTTTTTGGTTTTTCGAG
+# ---------------------- 22222222 --------------- --------------- 11111111 ---------------------------- UUUUUUUUUU TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+
 
 
 def hamming(a, b):
@@ -37,8 +41,8 @@ def get_options():
     parser = argparse.ArgumentParser(prog='process_share.py')
     parser.add_argument('-1', '--read1', help='Read 1 (R1)')
     parser.add_argument('-2', '--read2', help='Read 2, containing pixel barcodes (R2)')
-#    parser.add_argument('-R', '--rna', help='Process as scRNA-seq, stitching R3 and R2', action='store_true')
-#    parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
+    parser.add_argument('-R', '--rna', help='Process as scRNA-seq, stitching R3 and R2', action='store_true')
+    parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
     parser.add_argument('-F', '--filter_failed', help='Filter failed reads', action='store_true')
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
