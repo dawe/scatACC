@@ -119,12 +119,13 @@ def main():
         
         if options.rna:
             if umi_end < len(seq2):
-                umi_seq = item[1].seq[umi_start:umi_end]
-                umi_qual = item[1].qualstr[umi_start:umi_end]
-                seq3 = seq3[umi_end_trim:]
-                qual3 = qual3[umi_end_trim:]
+                umi_seq = seq2[umi_start:umi_end]
+                umi_qual = qual2[umi_start:umi_end]
+                seq3 = seq2[umi_end:]
+                qual3 = qual2[umi_end:]
             else:
                 umi_seq = umi_qual = b''
+                seq3 = qual3 = b''
         elif len(seq3) >= 50:
             # if there's enough sequence beyond the adapter
             # return the sequence
