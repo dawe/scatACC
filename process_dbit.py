@@ -42,7 +42,7 @@ def get_options():
     parser.add_argument('-1', '--read1', help='Read 1 (R1)')
     parser.add_argument('-2', '--read2', help='Read 2, containing pixel barcodes (R2)')
     parser.add_argument('-R', '--rna', help='Process as scRNA-seq, stitching R3 and R2', action='store_true')
-    parser.add_argument('-L', '--stitch_length', help='Number of bp to retain when stitching', default=10)
+    parser.add_argument('-L', '--umi_length', help='Length of UMI (stiched to CB)', default=10)
     parser.add_argument('-F', '--filter_failed', help='Filter failed reads', action='store_true')
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
@@ -73,6 +73,7 @@ def main():
     
     sp1 = b'CAAGCGTTGGCTTCTCGCATCT' # [0:22]
     sp2 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
+    sp3 = b'GTGGCCGATGTTTCGCATCGGCGTACGA' # [68:96]
 
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
@@ -99,6 +100,10 @@ def main():
     n_tot = 0
     n_spwrong = 0
     n_fail = 0
+    
+    umi_start = 96
+    umi_end = umi_start + options.umi_length
+    umi_end_trim = len(sp3) + options.umi_length
     for item in read_iterator:
     
         if options.n_seq > 0 and n_tot == options.n_seq:
@@ -112,10 +117,19 @@ def main():
         qual2 = item[1].qualstr
         qual3 = item[1].qualstr[68:]
         
-        if len(seq3) >= 50:
+        if options.rna:
+            if umi_end < len(seq2):
+                umi_seq = item[1].seq[umi_start:umi_end]
+                umi_qual = item[1].qualstr[umi_start:umi_end]
+                seq3 = seq3[umi_end_trim:]
+                qual3 = qual3[umi_end_trim:]
+            else:
+                umi_seq = umi_qual = b''
+        elif len(seq3) >= 50:
             # if there's enough sequence beyond the adapter
             # return the sequence
             # otherwise we may return nothing?
+            # 49 is the length of the adapter in ATAC
             seq3 = seq3[49:]
             qual3 = qual3[49:]
         else:
@@ -149,6 +163,10 @@ def main():
             
         seq2_out = bc1 + bc2
         q_seq2_out = q_bc1 + q_bc2
+        
+        if options.rna:
+            seq2_out = seq2_out + umi_seq
+            q_seq2_out = q_seq2_out + umi_qual
         
         # since bccorrection returns empty bc if not found
         # we can use it to skip bad reads
