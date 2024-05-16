@@ -140,6 +140,10 @@ def main():
         n_tot += 1
        
         spacer_wrong = False
+        # should I check also sp3 for RNA?
+        # for the time being skip it. If sp1 or sp2 are not in place it should be 
+        # skipped, if they are in place there's a chance any problem with sp3
+        # is only a single mismatch. Spare some computational burden
         if hamming(seq2[:22], sp1) > options.threshold or hamming(seq2[30:60], sp2) > options.threshold:
             spacer_wrong = True
             n_spwrong += 1
