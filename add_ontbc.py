@@ -67,12 +67,13 @@ def main():
     
     if not options.bamfile:
         bamfile = '-'
+        mode_in = 'r'
     if not options.output:
         outfile = '-'
         mode_out = 'w'
 
     fq_reader = pysam.FastqFile(options.fastq)
-    bam_reader = pysam.AlignmentFile(bamfile)
+    bam_reader = pysam.AlignmentFile(bamfile, mode_in)
     sam_writer = pysam.AlignmentFile(outfile, mode_out, template=bam_reader)
     
     I = iter(zip(fq_reader, bam_reader))
