@@ -85,7 +85,7 @@ def main():
         ali.tags = ali.tags + [('CR', cb),('UR',umi)]
                 
         if correct_bc:
-            c_bc, found = find_bc(cb, wl_list)
+            c_cb, found = find_bc(cb, wl_list)
             if found:
                 ali.tags = ali.tags + [('CB', c_cb),('UB',umi)]
         
