@@ -12,6 +12,12 @@ def hamming(a, b):
         return la
     return sum([a[x] != b[x] for x in range(len(a))])
 
+def find_bc(CB, L, thr=1):
+    pos = [x for x in range(len(L)) if hamming(L[x], CB) <= thr]
+    if len(pos) > 0:
+        return (L[pos[0]], 1)
+    return (CB, 0)
+    
 
 def get_cb_struct(S):
     c, u = S.split(',')
@@ -79,7 +85,9 @@ def main():
         ali.tags = ali.tags + [('CR', cb),('UR',umi)]
                 
         if correct_bc:
-            pass
+            c_bc, found = find_bc(cb, wl_list)
+            if found:
+                ali.tags = ali.tags + [('CB', c_cb),('UB',umi)]
         
         sam_writer.write(ali)
 
