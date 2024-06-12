@@ -70,14 +70,16 @@ s = s[idx]
 fig = plt.figure()
 ax = fig.add_subplot(1,1,1)
 
-sns.boxplot(data = df.T[idx], orient='h', palette=plt.cm.hsv([int(x.split('_')[0])/15 for x in df.T[idx].columns]), fliersize=0, ax=ax)
+n_states = len(df)
+
+sns.boxplot(data = df.T[idx], orient='h', palette=plt.cm.hsv([int(x.split('_')[0])/n_states for x in df.T[idx].columns]), fliersize=0, ax=ax)
 sns.swarmplot(data = df.T[idx], orient='h', color='black', ax=ax)
 
 
 #yticks(range(len(df)), m.index)
 ax.set_title("State Enrichment")
-ax.vlines(1, -1, 15)
-ax.set_ylim(-.5, 14.5)
+ax.vlines(1, -1, n_states)
+ax.set_ylim(-.5, n_states - .5)
 ax.set_xlabel("tnH / tn5")
 plt.tight_layout()
 fig.savefig("State_Enrichment.png", dpi=300)
