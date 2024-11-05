@@ -82,7 +82,7 @@ def demux():
             suffix = ['READ1', 'READ3', 'READ2']
         filenames = [f'{options.prefix}_BC_{a}_{r}.fq.gz' for a in bc_A for r in suffix]        
         un_filenames = [f'{options.prefix}_un_{r}.fq.gz' for r in suffix]
-        options.write_unmatched = True
+#        options.write_unmatched = True
 
     wfh = dict.fromkeys(filenames + un_filenames)
     wfh_bgz = dict.fromkeys(filenames + un_filenames)

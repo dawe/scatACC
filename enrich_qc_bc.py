@@ -61,7 +61,7 @@ df.columns = samples_sum
 desc = df.T.describe().T
 desc.to_csv("State_Enrichment_Stats.txt", sep="\t")
 df.to_csv("State_Enrichment.txt", sep="\t")
-m = desc['mean']
+m = desc['50%']
 s = desc['std']
 
 idx = m.sort_values().index
@@ -73,7 +73,7 @@ ax = fig.add_subplot(1,1,1)
 n_states = len(df)
 
 sns.boxplot(data = df.T[idx], orient='h', palette=plt.cm.hsv([int(x.split('_')[0])/n_states for x in df.T[idx].columns]), fliersize=0, ax=ax)
-sns.swarmplot(data = df.T[idx], orient='h', color='black', ax=ax)
+sns.swarmplot(data = df.T[idx], orient='h', color='black', ax=ax, size=2)
 
 
 #yticks(range(len(df)), m.index)
