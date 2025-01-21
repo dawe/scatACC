@@ -47,6 +47,7 @@ def get_options():
     parser.add_argument('-p', '--prefix', help='Prefix for output files')
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
     parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
+    parser.add_argument('-T', '--template_switch', help='Remove Template Switch sequence at the beginning of RNA', action='store_true')
     parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
   
     options = parser.parse_args()
@@ -70,10 +71,13 @@ def main():
             bc_list.append(bytes(t[1], encoding='ascii'))
         bc_list = np.array(bc_list)
     
+
+    tso = b'AAGCAGTGGTATCAACGCAGAGTGAATGGG'  # random priming creates this
     
     sp1 = b'CAAGCGTTGGCTTCTCGCATCT' # [0:22]
     sp2 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
-    sp3 = b'GTGGCCGATGTTTCGCATCGGCGTACGA' # [68:96]
+    sp3 = b'GTGGCCGATGTTTCGCATCGGCGTACGACT' # [68:98]
+    sp4 = b'GCGATAGC' # [108:116] optional tag when random priming is used
 
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
@@ -101,7 +105,7 @@ def main():
     n_spwrong = 0
     n_fail = 0
     
-    umi_start = 96
+    umi_start = 98
     umi_end = umi_start + options.umi_length
     umi_end_trim = len(sp3) + options.umi_length
     for item in read_iterator:
@@ -126,6 +130,12 @@ def main():
             else:
                 umi_seq = umi_qual = b''
                 seq3 = qual3 = b''
+            if options.template_switch:
+                seq1 = seq1[30:]
+                qual1 = qual1[30:]
+                # remove 8bp tag 
+                seq3 = seq3[8:]
+                qual3 = qual3[8:]
         elif len(seq3) >= 50:
             # if there's enough sequence beyond the adapter
             # return the sequence
