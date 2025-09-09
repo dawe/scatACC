@@ -61,7 +61,7 @@ def parse_single_file(filename, whitelist=set(), max_lines=-1):
 def parse_beds(sample, path, barcodes, whitelist=set(), max_lines=-1):
     csize = dict()
     for barcode in barcodes:
-        filename = f'{path}/{sample}_BC_{barcode}.bed'
+        filename = f'{path}/{sample}_{barcode}.bed'
         _bc_size = parse_single_file(filename, whitelist, max_lines)
         for cell in _bc_size:
             if not cell in csize:
