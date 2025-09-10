@@ -48,6 +48,7 @@ def get_options():
     parser.add_argument('-C', '--bc_correct_file', help='Fix cell barcode to given list	', default='')
     parser.add_argument('-t', '--threshold', help='Max distance when correcting barcodes', default=1, type=int)
     parser.add_argument('-T', '--template_switch', help='Remove Template Switch sequence at the beginning of RNA', action='store_true')
+    parser.add_argument('-V', '--aviti', help='Sequenced on EB platform, so TSO and PCR handle are not present', action='store_true')
     parser.add_argument('-n', '--n_seq', help='Max number of sequences to process (for debugging)', default=0, type=int)
   
     options = parser.parse_args()
@@ -71,13 +72,19 @@ def main():
             bc_list.append(bytes(t[1], encoding='ascii'))
         bc_list = np.array(bc_list)
     
-
     tso = b'AAGCAGTGGTATCAACGCAGAGTGAATGGG'  # random priming creates this
     
     sp1 = b'CAAGCGTTGGCTTCTCGCATCT' # [0:22]
     sp2 = b'ATCCACGTGCTTGAGAGGCCAGAGCATTCG' # [30:60]
     sp3 = b'GTGGCCGATGTTTCGCATCGGCGTACGACT' # [68:98]
     sp4 = b'GCGATAGC' # [108:116] optional tag when random priming is used
+
+    if options.aviti:
+        options.template_switch = False        
+        sp1 = b''
+
+    r2_offset_1 = len(sp1) + 8 + len(sp2) + 8
+    r2_offset_2 = r2_offset_1 + len(sp3)
 
     r1 = HTSeq.FastqReader(options.read1)
     r2 = HTSeq.FastqReader(options.read2)
@@ -105,7 +112,7 @@ def main():
     n_spwrong = 0
     n_fail = 0
     
-    umi_start = 98
+    umi_start = r2_offset_2
     umi_end = umi_start + options.umi_length
     umi_end_trim = len(sp3) + options.umi_length
     for item in read_iterator:
@@ -115,11 +122,11 @@ def main():
     
         seq1 = item[0].seq
         seq2 = item[1].seq
-        seq3 = item[1].seq[68:]
+        seq3 = item[1].seq[r2_offset_1:]
 
         qual1 = item[0].qualstr
         qual2 = item[1].qualstr
-        qual3 = item[1].qualstr[68:]
+        qual3 = item[1].qualstr[r2_offset_1:]
         
         if options.rna:
             if umi_end < len(seq2):
@@ -154,7 +161,19 @@ def main():
         # for the time being skip it. If sp1 or sp2 are not in place it should be 
         # skipped, if they are in place there's a chance any problem with sp3
         # is only a single mismatch. Spare some computational burden
-        if hamming(seq2[:22], sp1) > options.threshold or hamming(seq2[30:60], sp2) > options.threshold:
+        if options.aviti:
+            check1 = sp2
+            check2 = sp3
+            s1 = 8
+        else:
+            check1 = sp1
+            check2 = sp2
+            s1 = 0
+        e1 = s1 + len(check1)
+        s2 = e1 + 8
+        e2 = s2 + len(check2)
+
+        if hamming(seq2[s1:e1], check1) > options.threshold or hamming(seq2[s2:e2], check2) > options.threshold:
             spacer_wrong = True
             n_spwrong += 1
         
@@ -165,12 +184,16 @@ def main():
         name1 = bytes('@' + item[0].name, encoding='ascii')
         name2 = bytes('@' + item[1].name, encoding='ascii')
         name3 = bytes('@' + item[1].name, encoding='ascii')
-            
-        bc1 = seq2[22:30]
-        bc2 = seq2[60:68]
         
-        q_bc1 = qual2[22:30]
-        q_bc2 = qual2[60:68]
+        bs1 = len(sp1)
+        be1 = bs1 + 8
+        bs2 = e1
+        be2 = e1 + 8 # = r2_offset_1
+        bc1 = seq2[bs1:be1]
+        bc2 = seq2[bs2:be2]
+        
+        q_bc1 = qual2[bs1:be1]
+        q_bc2 = qual2[bs2:be2]
         
         if bc_fix:
             bc1 = correct_bc(bc1, bc_list, options.threshold)
@@ -216,6 +239,8 @@ def main():
     fh_out3.close()
     raw_out3.close()
 
+    if not options.filter_failed:
+        n_fail = n_fail - n_spwrong
     n_pass = n_tot - n_spwrong - n_fail
     sys.stderr.write(f"Total sequences:\t{n_tot}\n")
     f = n_spwrong / n_tot * 100
