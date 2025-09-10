@@ -129,7 +129,7 @@ def main():
         qual3 = item[1].qualstr[r2_offset_1:]
         
         if options.rna:
-            if umi_end < len(seq2):
+            if umi_end <= len(seq2):
                 umi_seq = seq2[umi_start:umi_end]
                 umi_qual = qual2[umi_start:umi_end]
                 seq3 = seq2[umi_end:]
