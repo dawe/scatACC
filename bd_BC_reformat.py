@@ -273,14 +273,27 @@ def main():
                 n_spwrong += 1
 
         else:
+            # first off, UMI read is in reverse complement, so rc it
+            seq1 = HTSeq.reverse_complement(seq1)
+            qual1 = qual1[::-1]
+
             # isolate 3 barcodes, removing 5p linker
             # spacer_1, spacer_2 are at fixed
-            if hamming(seq1[:20], Enh_5p_primer) < options.threshold and seq1[29:33] == spacer_1 and seq1[42:46] == spacer_2:
-                cls1, cls2, cls3 = seq1[20:29], seq1[33:42], seq1[46:55]
-                q_cls1, q_cls2, q_cls3 = qual1[20:29], qual1[33:42], qual1[46:55]
+            if hamming(seq1[:17], Tso_capture_seq_Enh_EnhV2) < options.threshold and seq1[34:38] == spacer_1 and seq1[47:51] == spacer_2:
+                cls1, cls2, cls3 = seq1[51:60], seq1[38:47], seq1[25:34]
+                q_cls1, q_cls2, q_cls3 = qual1[51:60], qual1[38:47], qual1[25:34]
             else:
                 n_spwrong += 1
 
+##### This is wrong!                       
+#            # isolate 3 barcodes, removing 5p linker
+#            # spacer_1, spacer_2 are at fixed
+#            if hamming(seq1[:20], Enh_5p_primer) < options.threshold and seq1[29:33] == spacer_1 and seq1[42:46] == spacer_2:
+#                cls1, cls2, cls3 = seq1[20:29], seq1[33:42], seq1[46:55]
+#                q_cls1, q_cls2, q_cls3 = qual1[20:29], qual1[33:42], qual1[46:55]
+#            else:
+#                n_spwrong += 1
+#######
 
         n_tot += 1
 
