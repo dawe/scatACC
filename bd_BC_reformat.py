@@ -24,17 +24,13 @@ Enh_linker2 = b'GACA'
 
 Enh_5p_primer = b"ACAGGAAACTCATGGTGCGT"
 
-#Enh_5p_linker1 = b"AATG"
-#Enh_5p_linker2 = b"CCAC"
-# These are in RC
-Enh_5p_linker1 = b"GTGG"
-Enh_5p_linker2 = b"CATT"
+Enh_5p_linker1 = b"AATG"
+Enh_5p_linker2 = b"CCAC"
 
 Enh_inserts = [b"", b"A", b"GT", b"TCA"]
 
 Tso_capture_seq_Enh_EnhV2 = b"TATGCGTAGTAGGTATG"
 Tso_capture_seq_EnhV3 = b"GTGGAGTCGTGATTATA"
-Tso_capture_seq_EnhV3_RC = b"TATAATCACGACTCCAC"
 
 #B384_cell_key1 = (
 B384_cell_key = [
@@ -235,10 +231,6 @@ def main():
         spacer_1, spacer_2 = Enh_linker1, Enh_linker2
     else:
         spacer_1, spacer_2 = Enh_5p_linker1, Enh_5p_linker2
-        # we have to reverse complement all CLS 
-        for x in range(3):
-            for y in range(len(B384_cell_key[x])):
-                B384_cell_key[x][y] = reverse_complement(B384_cell_key[x][y])
 
 
     read_iterator = HTSeq.FastqReader(options.cls_read)
@@ -283,12 +275,15 @@ def main():
 
         else:
             # first off, UMI read is in reverse complement, 
+            seq1 = reverse_complement(seq1)
+            qual1 = qual1[::-1]
             
             # isolate 3 barcodes, removing 5p linker
             # spacer_1, spacer_2 are at fixed
-            if hamming(seq1[:17], Tso_capture_seq_EnhV3_RC) < options.threshold and seq1[34:38] == spacer_1 and seq1[47:51] == spacer_2:
-                cls1, cls2, cls3 = seq1[51:60], seq1[38:47], seq1[25:34]
-                q_cls1, q_cls2, q_cls3 = qual1[51:60], qual1[38:47], qual1[25:34]
+            # take negative indices so we correctly start from 3' of rc sequence
+            if hamming(seq1[-17:], Tso_capture_seq_EnhV3) < options.threshold and seq1[-38:-34] == spacer_2 and seq1[-51:47] == spacer_1:
+                cls1, cls2, cls3 = seq1[-60:-51], seq1[-47:-38], seq1[-34:-25]
+                q_cls1, q_cls2, q_cls3 = qual1[-50:-51], qual1[-47:-38], qual1[-34:-25]
             else:
                 n_spwrong += 1
 
