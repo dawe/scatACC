@@ -28,7 +28,7 @@ Enh_5p_primer = b"ACAGGAAACTCATGGTGCGT"
 #Enh_5p_linker2 = b"CCAC"
 # These are in RC
 Enh_5p_linker1 = b"GTGG"
-Enh_5p_linker2 = b"CACC"
+Enh_5p_linker2 = b"CATT"
 
 Enh_inserts = [b"", b"A", b"GT", b"TCA"]
 
