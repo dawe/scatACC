@@ -24,8 +24,11 @@ Enh_linker2 = b'GACA'
 
 Enh_5p_primer = b"ACAGGAAACTCATGGTGCGT"
 
-Enh_5p_linker1 = b"AATG"
-Enh_5p_linker2 = b"CCAC"
+#Enh_5p_linker1 = b"AATG"
+#Enh_5p_linker2 = b"CCAC"
+# These are in RC
+Enh_5p_linker1 = b"GTGG"
+Enh_5p_linker2 = b"CACC"
 
 Enh_inserts = [b"", b"A", b"GT", b"TCA"]
 
@@ -274,8 +277,8 @@ def main():
 
         else:
             # first off, UMI read is in reverse complement, so rc it
-            seq1 = HTSeq.reverse_complement(seq1)
-            qual1 = qual1[::-1]
+            #seq1 = HTSeq.reverse_complement(seq1)
+            #qual1 = qual1[::-1]
 
             # isolate 3 barcodes, removing 5p linker
             # spacer_1, spacer_2 are at fixed
