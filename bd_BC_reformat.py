@@ -168,6 +168,17 @@ B384_cell_key = [
                   ]
                   ]
 
+
+def reverse_complement(s):
+    rc = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 'N':'N',
+         65:84, 67:71, 71:67, 84:65, 78:78,
+            }
+    s = [rc[x] for x in s]
+    try:
+        return bytes(s)
+    except:
+        return ''.join(s)
+
 for x in range(3):
     #convert to binary
     B384_cell_key[x] = [x.encode('ascii') for x in B384_cell_key[x]]
