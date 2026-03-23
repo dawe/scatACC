@@ -176,7 +176,7 @@ def reverse_complement(s):
     rc = {'A':'T', 'C':'G', 'G':'C', 'T':'A', 'N':'N',
          65:84, 67:71, 71:67, 84:65, 78:78,
             }
-    s = [rc[x] for x in s]
+    s = [rc[x] for x in s[::-1]]
     try:
         return bytes(s)
     except:
