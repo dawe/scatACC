@@ -282,7 +282,7 @@ def main():
 
             # isolate 3 barcodes, removing 5p linker
             # spacer_1, spacer_2 are at fixed
-            if hamming(seq1[:17], Tso_capture_seq_Enh_EnhV2) < options.threshold and seq1[34:38] == spacer_1 and seq1[47:51] == spacer_2:
+            if hamming(reverse_complement(seq1[:17]), Tso_capture_seq_EnhV3) < options.threshold and seq1[34:38] == spacer_1 and seq1[47:51] == spacer_2:
                 cls1, cls2, cls3 = seq1[51:60], seq1[38:47], seq1[25:34]
                 q_cls1, q_cls2, q_cls3 = qual1[51:60], qual1[38:47], qual1[25:34]
             else:
