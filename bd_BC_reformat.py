@@ -292,7 +292,7 @@ def main():
         
         if options.correct_barcodes  and len(seq1_out) != len(q_seq1_out):
             n_fail += 1
-            seq1_out = b'NNNNNNNNNNNNNNNNNNNNNNNNNNN'
+            seq1_out = b'N' * len(q_seq1_out)
         
         r1_spool = r1_spool + name1 + nl + seq1_out + dnl + q_seq1_out + nl
         
