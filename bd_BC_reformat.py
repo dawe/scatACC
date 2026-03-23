@@ -168,7 +168,7 @@ B384_cell_key = [
                   ]
                   ]
 
-for x in range(2):
+for x in range(3):
     #convert to binary
     B384_cell_key[x] = [x.encode('ascii') for x in B384_cell_key[x]]
     
