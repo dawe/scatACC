@@ -283,7 +283,7 @@ def main():
             # take negative indices so we correctly start from 3' of rc sequence
             if hamming(seq1[-17:], Tso_capture_seq_EnhV3) < options.threshold and seq1[-38:-34] == spacer_2 and seq1[-51:-47] == spacer_1:
                 cls1, cls2, cls3 = seq1[-60:-51], seq1[-47:-38], seq1[-34:-25]
-                q_cls1, q_cls2, q_cls3 = qual1[-50:-51], qual1[-47:-38], qual1[-34:-25]
+                q_cls1, q_cls2, q_cls3 = qual1[-60:-51], qual1[-47:-38], qual1[-34:-25]
             else:
                 n_spwrong += 1
 
